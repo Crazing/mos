@@ -1,6 +1,6 @@
 ; ==========================================
-; pmtest8.asm
-; 编译方法：nasm pmtest8.asm -o pmtest8.com
+; pmtest9.asm
+; 编译方法：nasm pmtest9.asm -o pmtest9.com
 ; ==========================================
 
 %include	"pm.inc"	; 常量, 宏, 以及一些说明
@@ -69,8 +69,10 @@ _ARDStruct:			; Address Range Descriptor Structure
 	_dwLengthLow:		dd	0
 	_dwLengthHigh:		dd	0
 	_dwType:		dd	0
-_PageTableNumber		dd	0
-
+_PageTableNumber:		dd	0
+_SavedIDTR:			dd	0	; 用于保存 IDTR
+				dd	0
+_SavedIMREG:			db	0	; 中断屏蔽寄存器值
 _MemChkBuf:	times	256	db	0
 
 ; 保护模式下使用这些符号
@@ -88,10 +90,33 @@ ARDStruct		equ	_ARDStruct	- $$
 	dwLengthHigh	equ	_dwLengthHigh	- $$
 	dwType		equ	_dwType		- $$
 MemChkBuf		equ	_MemChkBuf	- $$
+SavedIDTR		equ	_SavedIDTR	- $$
+SavedIMREG		equ	_SavedIMREG	- $$
 PageTableNumber		equ	_PageTableNumber- $$
 
 DataLen			equ	$ - LABEL_DATA
 ; END of [SECTION .data1]
+
+
+; IDT
+[SECTION .idt]
+ALIGN	32
+[BITS	32]
+LABEL_IDT:
+; 门                                目标选择子,            偏移, DCount, 属性
+%rep 32
+			Gate	SelectorCode32, SpuriousHandler,      0, DA_386IGate
+%endrep
+.020h:			Gate	SelectorCode32,    ClockHandler,      0, DA_386IGate
+%rep 95
+			Gate	SelectorCode32, SpuriousHandler,      0, DA_386IGate
+%endrep
+.080h:			Gate	SelectorCode32,  UserIntHandler,      0, DA_386IGate
+
+IdtLen		equ	$ - LABEL_IDT
+IdtPtr		dw	IdtLen - 1	; 段界限
+		dd	0		; 基地址
+; END of [SECTION .idt]
 
 
 ; 全局堆栈段
@@ -183,11 +208,28 @@ LABEL_MEM_CHK_OK:
 	add	eax, LABEL_GDT		; eax <- gdt 基地址
 	mov	dword [GdtPtr + 2], eax	; [GdtPtr + 2] <- gdt 基地址
 
+	; 为加载 IDTR 作准备
+	xor	eax, eax
+	mov	ax, ds
+	shl	eax, 4
+	add	eax, LABEL_IDT		; eax <- idt 基地址
+	mov	dword [IdtPtr + 2], eax	; [IdtPtr + 2] <- idt 基地址
+
+	; 保存 IDTR
+	sidt	[_SavedIDTR]
+
+	; 保存中断屏蔽寄存器(IMREG)值
+	in	al, 21h
+	mov	[_SavedIMREG], al
+
 	; 加载 GDTR
 	lgdt	[GdtPtr]
 
 	; 关中断
-	cli
+	;cli
+
+	; 加载 IDTR
+	lidt	[IdtPtr]
 
 	; 打开地址线A20
 	in	al, 92h
@@ -209,8 +251,12 @@ LABEL_REAL_ENTRY:		; 从保护模式跳回到实模式就到了这里
 	mov	ds, ax
 	mov	es, ax
 	mov	ss, ax
-
 	mov	sp, [_wSPValueInRealMode]
+
+	lidt	[_SavedIDTR]	; 恢复 IDTR 的原值
+
+	mov	al, [_SavedIMREG]	; ┓恢复中断屏蔽寄存器(IMREG)的原值
+	out	21h, al			; ┛
 
 	in	al, 92h		; ┓
 	and	al, 11111101b	; ┣ 关闭 A20 地址线
@@ -235,9 +281,13 @@ LABEL_SEG_CODE32:
 
 	mov	ax, SelectorStack
 	mov	ss, ax			; 堆栈段选择子
-
 	mov	esp, TopOfStack
 
+	call	Init8259A
+
+	int	080h
+	sti
+	jmp	$
 
 	; 下面显示一个字符串
 	push	szPMMessage
@@ -252,8 +302,110 @@ LABEL_SEG_CODE32:
 
 	call	PagingDemo		; 演示改变页目录的效果
 
+	call	SetRealmode8259A
+
 	; 到此停止
 	jmp	SelectorCode16:0
+
+; Init8259A ---------------------------------------------------------------------------------------------
+Init8259A:
+	mov	al, 011h
+	out	020h, al	; 主8259, ICW1.
+	call	io_delay
+
+	out	0A0h, al	; 从8259, ICW1.
+	call	io_delay
+
+	mov	al, 020h	; IRQ0 对应中断向量 0x20
+	out	021h, al	; 主8259, ICW2.
+	call	io_delay
+
+	mov	al, 028h	; IRQ8 对应中断向量 0x28
+	out	0A1h, al	; 从8259, ICW2.
+	call	io_delay
+
+	mov	al, 004h	; IR2 对应从8259
+	out	021h, al	; 主8259, ICW3.
+	call	io_delay
+
+	mov	al, 002h	; 对应主8259的 IR2
+	out	0A1h, al	; 从8259, ICW3.
+	call	io_delay
+
+	mov	al, 001h
+	out	021h, al	; 主8259, ICW4.
+	call	io_delay
+
+	out	0A1h, al	; 从8259, ICW4.
+	call	io_delay
+
+	mov	al, 11111110b	; 仅仅开启定时器中断
+	;mov	al, 11111111b	; 屏蔽主8259所有中断
+	out	021h, al	; 主8259, OCW1.
+	call	io_delay
+
+	mov	al, 11111111b	; 屏蔽从8259所有中断
+	out	0A1h, al	; 从8259, OCW1.
+	call	io_delay
+
+	ret
+; Init8259A ---------------------------------------------------------------------------------------------
+
+
+; SetRealmode8259A ---------------------------------------------------------------------------------------------
+SetRealmode8259A:
+	mov	ax, SelectorData
+	mov	fs, ax
+
+	mov	al, 017h
+	out	020h, al	; 主8259, ICW1.
+	call	io_delay
+
+	mov	al, 008h	; IRQ0 对应中断向量 0x8
+	out	021h, al	; 主8259, ICW2.
+	call	io_delay
+
+	mov	al, 001h
+	out	021h, al	; 主8259, ICW4.
+	call	io_delay
+
+	mov	al, [fs:SavedIMREG]	; ┓恢复中断屏蔽寄存器(IMREG)的原值
+	out	021h, al		; ┛
+	call	io_delay
+
+	ret
+; SetRealmode8259A ---------------------------------------------------------------------------------------------
+
+io_delay:
+	nop
+	nop
+	nop
+	nop
+	ret
+
+; int handler ---------------------------------------------------------------
+_ClockHandler:
+ClockHandler	equ	_ClockHandler - $$
+	inc	byte [gs:((80 * 0 + 70) * 2)]	; 屏幕第 0 行, 第 70 列。
+	mov	al, 20h
+	out	20h, al				; 发送 EOI
+	iretd
+
+_UserIntHandler:
+UserIntHandler	equ	_UserIntHandler - $$
+	mov	ah, 0Ch				; 0000: 黑底    1100: 红字
+	mov	al, 'I'
+	mov	[gs:((80 * 0 + 70) * 2)], ax	; 屏幕第 0 行, 第 70 列。
+	iretd
+
+_SpuriousHandler:
+SpuriousHandler	equ	_SpuriousHandler - $$
+	mov	ah, 0Ch				; 0000: 黑底    1100: 红字
+	mov	al, '!'
+	mov	[gs:((80 * 0 + 75) * 2)], ax	; 屏幕第 0 行, 第 75 列。
+	jmp	$
+	iretd
+; ---------------------------------------------------------------------------
 
 ; 启动分页机制 --------------------------------------------------------------
 SetupPaging:
@@ -274,7 +426,7 @@ SetupPaging:
 	; 首先初始化页目录
 	mov	ax, SelectorFlatRW
 	mov	es, ax
-	mov	edi, PageDirBase0	; 此段首地址为 PageDirBase0
+	mov	edi, PageDirBase0	; 此段首地址为 PageDirBase
 	xor	eax, eax
 	mov	eax, PageTblBase0 | PG_P  | PG_USU | PG_RWW
 .1:
@@ -287,7 +439,7 @@ SetupPaging:
 	mov	ebx, 1024		; 每个页表 1024 个 PTE
 	mul	ebx
 	mov	ecx, eax		; PTE个数 = 页表个数 * 1024
-	mov	edi, PageTblBase0	; 此段首地址为 PageTblBase0
+	mov	edi, PageTblBase0	; 此段首地址为 PageTblBase
 	xor	eax, eax
 	mov	eax, PG_P  | PG_USU | PG_RWW
 .2:
@@ -352,7 +504,7 @@ PSwitch:
 	; 初始化页目录
 	mov	ax, SelectorFlatRW
 	mov	es, ax
-	mov	edi, PageDirBase1	; 此段首地址为 PageDirBase1
+	mov	edi, PageDirBase1	; 此段首地址为 PageDirBase
 	xor	eax, eax
 	mov	eax, PageTblBase1 | PG_P  | PG_USU | PG_RWW
 	mov	ecx, [PageTableNumber]
@@ -366,7 +518,7 @@ PSwitch:
 	mov	ebx, 1024		; 每个页表 1024 个 PTE
 	mul	ebx
 	mov	ecx, eax		; PTE个数 = 页表个数 * 1024
-	mov	edi, PageTblBase1	; 此段首地址为 PageTblBase1
+	mov	edi, PageTblBase1	; 此段首地址为 PageTblBase
 	xor	eax, eax
 	mov	eax, PG_P  | PG_USU | PG_RWW
 .2:
@@ -413,7 +565,7 @@ LenPagingDemoAll	equ	$ - PagingDemoProc
 ; foo -----------------------------------------------------------------------
 foo:
 OffsetFoo	equ	foo - $$
-	mov	ah, 0Ch			; 0000: 黑底    1100: 红字
+	mov	ah, 0Ch				; 0000: 黑底    1100: 红字
 	mov	al, 'F'
 	mov	[gs:((80 * 17 + 0) * 2)], ax	; 屏幕第 17 行, 第 0 列。
 	mov	al, 'o'
@@ -427,7 +579,7 @@ LenFoo	equ	$ - foo
 ; bar -----------------------------------------------------------------------
 bar:
 OffsetBar	equ	bar - $$
-	mov	ah, 0Ch			; 0000: 黑底    1100: 红字
+	mov	ah, 0Ch				; 0000: 黑底    1100: 红字
 	mov	al, 'B'
 	mov	[gs:((80 * 18 + 0) * 2)], ax	; 屏幕第 18 行, 第 0 列。
 	mov	al, 'a'
@@ -505,7 +657,7 @@ LABEL_SEG_CODE16:
 	mov	ss, ax
 
 	mov	eax, cr0
-	and	al, 11111110b
+	and	eax,7ffffffeh
 	mov	cr0, eax
 
 LABEL_GO_BACK_TO_REAL:
