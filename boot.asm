@@ -15,38 +15,14 @@ BaseOfStack		equ	07c00h	; Boot状态下堆栈基地址(栈底, 从这个位置向低地址生长)
 %endif
 
 BaseOfLoader		equ	09000h	; LOADER.BIN 被加载到的位置 ----  段地址
-OffsetOfLoader		equ	0200h	; LOADER.BIN 被加载到的位置 ---- 偏移地址
-
-RootDirSectors		equ	14	; 根目录占用空间
-SectorNoOfRootDirectory	equ	19	; Root Directory 的第一个扇区号
-SectorNoOfFAT1		equ	1	; FAT1 的第一个扇区号	= BPB_RsvdSecCnt
-DeltaSectorNo		equ	17	; DeltaSectorNo = BPB_RsvdSecCnt + (BPB_NumFATs * FATSz) - 2
-					; 文件的开始Sector号 = DirEntry中的开始Sector号 + 根目录占用Sector数目 + DeltaSectorNo
+OffsetOfLoader		equ	0100h	; LOADER.BIN 被加载到的位置 ---- 偏移地址
 ;================================================================================================
 
 	jmp short LABEL_START		; Start to boot.
 	nop				; 这个 nop 不可少
 
-	; 下面是 FAT12 磁盘的头
-	BS_OEMName	DB 'ForrestY'	; OEM String, 必须 8 个字节
-	BPB_BytsPerSec	DW 512		; 每扇区字节数
-	BPB_SecPerClus	DB 1		; 每簇多少扇区
-	BPB_RsvdSecCnt	DW 1		; Boot 记录占用多少扇区
-	BPB_NumFATs	DB 2		; 共有多少 FAT 表
-	BPB_RootEntCnt	DW 224		; 根目录文件数最大值
-	BPB_TotSec16	DW 2880		; 逻辑扇区总数
-	BPB_Media	DB 0xF0		; 媒体描述符
-	BPB_FATSz16	DW 9		; 每FAT扇区数
-	BPB_SecPerTrk	DW 18		; 每磁道扇区数
-	BPB_NumHeads	DW 2		; 磁头数(面数)
-	BPB_HiddSec	DD 0		; 隐藏扇区数
-	BPB_TotSec32	DD 0		; 如果 wTotalSectorCount 是 0 由这个值记录扇区数
-	BS_DrvNum	DB 0		; 中断 13 的驱动器号
-	BS_Reserved1	DB 0		; 未使用
-	BS_BootSig	DB 29h		; 扩展引导标记 (29h)
-	BS_VolID	DD 0		; 卷序列号
-	BS_VolLab	DB 'Tinix0.01  '; 卷标, 必须 11 个字节
-	BS_FileSysType	DB 'FAT12   '	; 文件系统类型, 必须 8个字节  
+; 下面是 FAT12 磁盘的头, 之所以包含它是因为下面用到了磁盘的一些信息
+%include	"fat12hdr.inc"
 
 LABEL_START:	
 	mov	ax, cs
@@ -94,7 +70,7 @@ LABEL_SEARCH_FOR_LOADERBIN:
 LABEL_CMP_FILENAME:
 	cmp	cx, 0
 	jz	LABEL_FILENAME_FOUND	; 如果比较了 11 个字符都相等, 表示找到
-	dec	cx
+dec	cx
 	lodsb				; ds:si -> al
 	cmp	al, byte [es:di]
 	jz	LABEL_GO_ON
@@ -265,14 +241,14 @@ GetFATEntry:
 	push	bx
 	push	ax
 	mov	ax, BaseOfLoader	; ┓
-	sub	ax, 0200h		; ┣ 在 BaseOfLoader 后面留出 4K 空间用于存放 FAT
+	sub	ax, 0100h		; ┣ 在 BaseOfLoader 后面留出 4K 空间用于存放 FAT
 	mov	es, ax			; ┛
 	pop	ax
 	mov	byte [bOdd], 0
 	mov	bx, 3
 	mul	bx			; dx:ax = ax * 3
 	mov	bx, 2
-	div	bx			; dx:ax / 2  ==>  ax <- 商, dx <- 余数，这个算法精髓直接找到了偏移量而且得到了奇偶判断
+	div	bx			; dx:ax / 2  ==>  ax <- 商, dx <- 余数
 	cmp	dx, 0
 	jz	LABEL_EVEN
 	mov	byte [bOdd], 1
