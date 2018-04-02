@@ -14,8 +14,7 @@ BaseOfStack		equ	0100h	; 调试状态下堆栈基地址(栈底, 从这个位置向低地址生长)
 BaseOfStack		equ	07c00h	; Boot状态下堆栈基地址(栈底, 从这个位置向低地址生长)
 %endif
 
-BaseOfLoader		equ	09000h	; LOADER.BIN 被加载到的位置 ----  段地址
-OffsetOfLoader		equ	0100h	; LOADER.BIN 被加载到的位置 ---- 偏移地址
+%include	"load.inc"
 ;================================================================================================
 
 	jmp short LABEL_START		; Start to boot.
@@ -63,9 +62,9 @@ LABEL_SEARCH_IN_ROOT_DIR_BEGIN:
 	cld
 	mov	dx, 10h
 LABEL_SEARCH_FOR_LOADERBIN:
-	cmp	dx, 0										; ┓循环次数控制,
+	cmp	dx, 0					; ┓循环次数控制,
 	jz	LABEL_GOTO_NEXT_SECTOR_IN_ROOT_DIR	; ┣如果已经读完了一个 Sector,
-	dec	dx											; ┛就跳到下一个 Sector
+	dec	dx					; ┛就跳到下一个 Sector
 	mov	cx, 11
 LABEL_CMP_FILENAME:
 	cmp	cx, 0
@@ -81,9 +80,9 @@ LABEL_GO_ON:
 	jmp	LABEL_CMP_FILENAME	;	继续循环
 
 LABEL_DIFFERENT:
-	and	di, 0FFE0h						; else ┓	di &= E0 为了让它指向本条目开头
-	add	di, 20h							;     ┃
-	mov	si, LoaderFileName					;     ┣ di += 20h  下一个目录条目
+	and	di, 0FFE0h		; else ┓	di &= E0 为了让它指向本条目开头
+	add	di, 20h			;      ┃
+	mov	si, LoaderFileName	;      ┣ di += 20h  下一个目录条目
 	jmp	LABEL_SEARCH_FOR_LOADERBIN;    ┛
 
 LABEL_GOTO_NEXT_SECTOR_IN_ROOT_DIR:
