@@ -3,7 +3,7 @@
 ; (ld 的‘-s’选项意为“strip all”)
 ;
 ; [root@XXX XXX]# nasm -f elf kernel.asm -o kernel.o
-; [root@XXX XXX]# ld -s kernel.o -o kernel.bin
+; [root@XXX XXX]# ld -s -Ttext 0x30400 -o kernel.bin kernel.o
 ; [root@XXX XXX]# 
 
 [section .text]	; 代码在此
