@@ -12,10 +12,10 @@ ENTRYPOINT	= 0x30400
 ASM		= nasm
 CC		= gcc
 LD		= ld
-ASMBFLAGS	= -I boot/include
-ASMKFLAGS	= -I include -f elf
-CFLAGS		= -I include -c -fno-builtin
-LDFLAGS		= -s -Ttext $(ENTRYPOINT)
+ASMBFLAGS	= -I boot/include/
+ASMKFLAGS	= -I include/ -f elf
+CFLAGS		= -m32 -I include -c -fno-builtin 
+LDFLAGS		= -m elf_i386 -s -Ttext $(ENTRYPOINT)
 
 # This Program
 MOSBOOT	= boot/boot.bin boot/loader.bin
