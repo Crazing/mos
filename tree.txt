@@ -1,0 +1,34 @@
+
+
+	\mos
+	©¦  Makefile
+	©¦  tree.txt
+	©¦  
+	©À©¤_dbgmos
+	©¦      bochsrc.bxrc
+	©¦      hd10meg.img
+	©¦      mos.img
+	©¦      run.bat
+	©¦
+	©À©¤lib
+	©¦      string.asm
+	©¦      klib.asm
+	©¦      
+	©À©¤kernel
+	©¦      start.c
+	©¦      kernel.asm
+	©¦      
+	©À©¤include
+	©¦      type.h
+	©¦      protect.h
+	©¦      const.h
+	©¦      
+	©¸©¤boot
+	    ©¦  loader.asm
+	    ©¦  boot.asm
+	    ©¦  
+	    ©¸©¤include
+		    pm.inc
+		    load.inc
+		    fat12hdr.inc
+            
