@@ -1,10 +1,10 @@
 
 ######################
-# Makefile for Tinix #
+# Makefile for Mos #
 ######################
 
 
-# Entry point of Tinix
+# Entry point of Mos
 # It must be as same as 'KernelEntryPointPhyAddr' in load.inc!!!
 ENTRYPOINT	= 0x30400
 
@@ -14,14 +14,14 @@ CC		= gcc
 LD		= ld
 ASMBFLAGS	= -I boot/include/
 ASMKFLAGS	= -I include/ -f elf
-CFLAGS		= -m32 -I include -c -fno-builtin 
+CFLAGS		= -w -m32 -I include -c -fno-builtin -fno-stack-protector
 LDFLAGS		= -m elf_i386 -s -Ttext $(ENTRYPOINT)
 
 # This Program
 MOSBOOT	= boot/boot.bin boot/loader.bin
 MOSKERNEL	= kernel.bin
-OBJS		= kernel/kernel.o kernel/start.o lib/klib.o lib/string.o
-
+OBJS		= kernel/kernel.o kernel/start.o kernel/i8259.o kernel/global.o kernel/protect.o\
+			lib/klib.o lib/klibc.o lib/string.o
 # All Phony Targets
 .PHONY : everything final clean realclean all
 
@@ -50,7 +50,19 @@ $(MOSKERNEL) : $(OBJS)
 kernel/kernel.o : kernel/kernel.asm
 	$(ASM) $(ASMKFLAGS) -o $@ $<
 
-kernel/start.o : kernel/start.c ./include/type.h ./include/const.h ./include/protect.h
+kernel/start.o: kernel/start.c include/type.h include/const.h include/protect.h include/proto.h include/string.h include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/i8259.o: kernel/i8259.c include/type.h include/const.h include/protect.h include/proto.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/global.o: kernel/global.c include/type.h include/const.h include/protect.h include/proto.h include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+kernel/protect.o: kernel/protect.c include/type.h include/const.h include/protect.h include/global.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+lib/klibc.o: lib/klib.c include/type.h include/const.h include/protect.h include/proto.h include/string.h include/global.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 lib/klib.o : lib/klib.asm

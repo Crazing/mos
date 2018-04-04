@@ -1,5 +1,3 @@
-
-
 	\mos
 	©¦  Makefile
 	©¦  tree.txt
@@ -10,22 +8,29 @@
 	©¦      mos.img
 	©¦      run.bat
 	©¦
+	©À©¤kernel
+	©¦      kernel.asm
+	©¦      start.c
+	©¦      i8259.c
+	©¦      global.c
+	©¦      protect.c
+	©¦  
 	©À©¤lib
 	©¦      string.asm
 	©¦      klib.asm
-	©¦      
-	©À©¤kernel
-	©¦      start.c
-	©¦      kernel.asm
+	©¦      klib.c
 	©¦      
 	©À©¤include
 	©¦      type.h
 	©¦      protect.h
 	©¦      const.h
+	©¦      proto.h
+	©¦      string.h
+	©¦      global.h
 	©¦      
 	©¸©¤boot
-	    ©¦  loader.asm
 	    ©¦  boot.asm
+	    ©¦  loader.asm
 	    ©¦  
 	    ©¸©¤include
 		    pm.inc
