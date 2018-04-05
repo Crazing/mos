@@ -23,7 +23,7 @@ MOSKERNEL	= kernel.bin
 OBJS		= kernel/kernel.o kernel/start.o kernel/i8259.o kernel/global.o kernel/protect.o\
 			lib/klib.o lib/klibc.o lib/string.o
 # All Phony Targets
-.PHONY : everything final clean realclean all
+.PHONY : everything final image clean realclean all buildimg
 
 # Default starting position
 everything : $(MOSBOOT) $(MOSKERNEL)
@@ -32,12 +32,22 @@ all : realclean everything
 
 final : all clean
 
+image : final buildimg
+
 clean :
 	rm -f $(OBJS)
 
 realclean :
 	rm -f $(OBJS) $(MOSBOOT) $(MOSKERNEL)
 
+# Write "boot.bin" & "loader.bin" into floppy image "TINIX.IMG"
+# We assume that "TINIX.IMG" exists in current folder
+buildimg :
+	mount _dbgmos/mos.img /mnt/floppy -o loop
+	cp -f boot/loader.bin /mnt/floppy/
+	cp -f kernel.bin /mnt/floppy
+	umount  /mnt/floppy
+	
 boot/boot.bin : boot/boot.asm boot/include/load.inc boot/include/fat12hdr.inc
 	$(ASM) $(ASMBFLAGS) -o $@ $<
 
