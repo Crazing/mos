@@ -105,11 +105,19 @@ PUBLIC void init_prot()
 			DA_386TSS);
 	tss.iobase	= sizeof(tss);	/* 没有I/O许可位图 */
 
-	// 填充 GDT 中进程的 LDT 的描述符
-	init_descriptor(&gdt[INDEX_LDT_FIRST],
-			vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[0].ldts),
-			LDT_SIZE * sizeof(DESCRIPTOR) - 1,
-			DA_LDT);
+	/* 填充 GDT 中每个进程的 LDT 的描述符 */
+	int i;
+	PROCESS* p_proc	= proc_table;
+	t_16 selector_ldt = INDEX_LDT_FIRST << 3;
+	for(i=0;i<NR_TASKS;i++){
+		init_descriptor(&gdt[selector_ldt>>3],
+				vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[i].ldts),
+				LDT_SIZE * sizeof(DESCRIPTOR) - 1,
+				DA_LDT);
+		p_proc++;
+		selector_ldt += 1 << 3;
+	}
+
 
 }
 

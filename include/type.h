@@ -17,6 +17,7 @@ typedef	int			t_bool;
 typedef	unsigned int		t_port;
 
 typedef	void	(*t_pf_int_handler)	();
+typedef	void	(*t_pf_task)		();
 
 
 #endif /* _TINIX_TYPE_H_ */
