@@ -8,11 +8,14 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
+#include "proto.h"
+#include "proc.h"
 #include "global.h"
 
 
 /* 本文件内函数声明 */
 PRIVATE void init_idt_desc(unsigned char vector, t_8 desc_type, t_pf_int_handler handler, unsigned char privilege);
+PRIVATE void init_descriptor(DESCRIPTOR * p_desc, t_32 base, t_32 limit, t_16 attribute);
 
 
 /* 中断处理函数 */
@@ -92,6 +95,22 @@ PUBLIC void init_prot()
 	init_idt_desc(INT_VECTOR_IRQ8 + 5,	DA_386IGate, hwint13,			PRIVILEGE_KRNL);
 	init_idt_desc(INT_VECTOR_IRQ8 + 6,	DA_386IGate, hwint14,			PRIVILEGE_KRNL);
 	init_idt_desc(INT_VECTOR_IRQ8 + 7,	DA_386IGate, hwint15,			PRIVILEGE_KRNL);
+
+	/* 填充 GDT 中 TSS 这个描述符 */
+	memset(&tss, 0, sizeof(tss));
+	tss.ss0		= SELECTOR_KERNEL_DS;
+	init_descriptor(&gdt[INDEX_TSS],
+			vir2phys(seg2phys(SELECTOR_KERNEL_DS), &tss),
+			sizeof(tss) - 1,
+			DA_386TSS);
+	tss.iobase	= sizeof(tss);	/* 没有I/O许可位图 */
+
+	// 填充 GDT 中进程的 LDT 的描述符
+	init_descriptor(&gdt[INDEX_LDT_FIRST],
+			vir2phys(seg2phys(SELECTOR_KERNEL_DS), proc_table[0].ldts),
+			LDT_SIZE * sizeof(DESCRIPTOR) - 1,
+			DA_LDT);
+
 }
 
 
@@ -111,6 +130,34 @@ PUBLIC void init_idt_desc(unsigned char vector, t_8 desc_type, t_pf_int_handler 
 	p_gate->offset_high	= (base >> 16) & 0xFFFF;
 }
 
+
+/*======================================================================*
+                           seg2phys
+ *----------------------------------------------------------------------*
+ 由段名求绝对地址
+ *======================================================================*/
+PUBLIC t_32 seg2phys(t_16 seg)
+{
+	DESCRIPTOR* p_dest = &gdt[seg >> 3];
+
+	return (p_dest->base_high << 24) | (p_dest->base_mid << 16) | (p_dest->base_low);
+}
+
+/*======================================================================*
+                           init_descriptor
+ *----------------------------------------------------------------------*
+ 初始化段描述符
+ *======================================================================*/
+PRIVATE void init_descriptor(DESCRIPTOR * p_desc, t_32 base, t_32 limit, t_16 attribute)
+{
+	p_desc->limit_low		= limit & 0x0FFFF;		// 段界限 1		(2 字节)
+	p_desc->base_low		= base & 0x0FFFF;		// 段基址 1		(2 字节)
+	p_desc->base_mid		= (base >> 16) & 0x0FF;		// 段基址 2		(1 字节)
+	p_desc->attr1			= attribute & 0xFF;		// 属性 1
+	p_desc->limit_high_attr2	= ((limit >> 16) & 0x0F) |
+						(attribute >> 8) & 0xF0;// 段界限 2 + 属性 2
+	p_desc->base_high		= (base >> 24) & 0x0FF;		// 段基址 3		(1 字节)
+}
 
 /*======================================================================*
                             exception_handler

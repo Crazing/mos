@@ -6,16 +6,19 @@
 ; ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-SELECTOR_KERNEL_CS	equ	8
+%include "sconst.inc"
 
 ; 导入函数
 extern	cstart
+extern	tinix_main
 extern	exception_handler
 extern	spurious_irq
 
 ; 导入全局变量
 extern	gdt_ptr
 extern	idt_ptr
+extern	p_proc_ready
+extern	tss
 extern	disp_pos
 
 bits 32
@@ -27,6 +30,8 @@ StackTop:		; 栈顶
 [section .text]	; 代码在此
 
 global _start	; 导出 _start
+
+global restart
 
 global	divide_error
 global	single_step_exception
@@ -121,9 +126,15 @@ csinit:		; “这个跳转指令强制使用刚刚初始化的结构”——<<OS:D&I 2nd>> P90.
 	;jmp 0x40:0
 	;ud2
 
-	sti
+	;sti
 
-	hlt
+	xor	eax, eax
+	mov	ax, SELECTOR_TSS
+	ltr	ax
+
+	jmp	tinix_main
+
+	;hlt
 
 
 ; 中断和异常 -- 硬件中断
@@ -138,7 +149,7 @@ csinit:		; “这个跳转指令强制使用刚刚初始化的结构”——<<OS:D&I 2nd>> P90.
 
 ALIGN	16
 hwint00:		; Interrupt routine for irq 0 (the clock).
-	hwint_master	0
+	iretd
 
 ALIGN	16
 hwint01:		; Interrupt routine for irq 1 (keyboard)
@@ -277,5 +288,20 @@ exception:
 	hlt
 
 
+; ====================================================================================
+;                                   restart
+; ====================================================================================
+restart:
+	mov	esp, [p_proc_ready]
+	lldt	[esp + P_LDT_SEL] 
+	lea	eax, [esp + P_STACKTOP]
+	mov	dword [tss + TSS3_S_SP0], eax
+	pop	gs
+	pop	fs
+	pop	es
+	pop	ds
+	popad
+	add	esp, 4
+	iretd
 
 
