@@ -14,6 +14,8 @@ PUBLIC void	disp_color_str(char * info, int color);
 /* protect.c */
 PUBLIC void	init_prot();
 PUBLIC t_32	seg2phys(t_16 seg);
+PUBLIC void	disable_irq(int irq);
+PUBLIC void	enable_irq(int irq);
 
 /* klib.c */
 PUBLIC void	delay(int time);
@@ -25,3 +27,10 @@ void restart();
 void TestA();
 void TestB();
 void TestC();
+
+/* i8259.c */
+PUBLIC void put_irq_handler(int iIRQ, t_pf_irq_handler handler);
+PUBLIC void spurious_irq(int irq);
+
+/* clock.c */
+PUBLIC void clock_handler(int irq);
