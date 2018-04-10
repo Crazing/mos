@@ -11,6 +11,8 @@
 #define	EXTERN
 #endif
 
+EXTERN	int		ticks;
+
 EXTERN	int		disp_pos;
 EXTERN	t_8		gdt_ptr[6];	// 0~15:Limit  16~47:Base
 EXTERN	DESCRIPTOR	gdt[GDT_SIZE];
@@ -27,3 +29,5 @@ extern	char		task_stack[];
 extern	TASK		task_table[];
 
 extern	t_pf_irq_handler	irq_table[];
+
+extern	t_sys_call		sys_call_table[];

@@ -24,3 +24,5 @@ PUBLIC	TASK	task_table[NR_TASKS] = {{TestA, STACK_SIZE_TESTA, "TestA"},
 					{TestC, STACK_SIZE_TESTC, "TestC"}};
 
 PUBLIC	t_pf_irq_handler	irq_table[NR_IRQ];
+
+PUBLIC	t_sys_call		sys_call_table[NR_SYS_CALL] = {sys_get_ticks};

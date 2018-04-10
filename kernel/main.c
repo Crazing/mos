@@ -51,7 +51,8 @@ PUBLIC int tinix_main()
 		selector_ldt += 1 << 3;
 	}
 
-	k_reenter = 0;
+	k_reenter	= 0;
+	ticks		= 0;
 
 	p_proc_ready	= proc_table;
 	
@@ -59,7 +60,6 @@ PUBLIC int tinix_main()
 	enable_irq(CLOCK_IRQ);				/* 让8259A可以接收时钟中断 */
 
 	restart();
-
 
 	while(1){}
 }
@@ -69,10 +69,9 @@ PUBLIC int tinix_main()
  *======================================================================*/
 void TestA()
 {
-	int i = 0;
 	while(1){
 		disp_str("A");
-		disp_int(i++);
+		disp_int(get_ticks());
 		disp_str(".");
 		delay(1);
 	}
@@ -84,7 +83,7 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
-	int i = 0x1000;
+	int i = 0;
 	while(1){
 		disp_str("B");
 		disp_int(i++);
@@ -99,7 +98,7 @@ void TestB()
  *======================================================================*/
 void TestC()
 {
-	int i = 0x2000;
+	int i = 0;
 	while(1){
 		disp_str("C");
 		disp_int(i++);

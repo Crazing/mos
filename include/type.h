@@ -20,5 +20,7 @@ typedef	void	(*t_pf_int_handler)	();
 typedef	void	(*t_pf_task)		();
 typedef	void	(*t_pf_irq_handler)	(int irq);
 
+typedef	void*	t_sys_call;
+
 
 #endif /* _TINIX_TYPE_H_ */
