@@ -27,7 +27,7 @@ PUBLIC int tinix_main()
 	t_16		selector_ldt	= SELECTOR_LDT_FIRST;
 	int i;
 	for(i=0;i<NR_TASKS;i++){
-		strcpy(p_proc->p_name, p_task->name);	// name of the process
+		strcpy(p_proc->name, p_task->name);	// name of the process
 		p_proc->pid	= i;			// pid
 
 		p_proc->ldt_sel	= selector_ldt;
@@ -50,11 +50,20 @@ PUBLIC int tinix_main()
 		p_task++;
 		selector_ldt += 1 << 3;
 	}
+	proc_table[0].ticks = proc_table[0].priority = 15;
+	proc_table[1].ticks = proc_table[1].priority =  5;
+	proc_table[2].ticks = proc_table[2].priority =  3;
 
 	k_reenter	= 0;
 	ticks		= 0;
 
 	p_proc_ready	= proc_table;
+	
+	/* 初始化 8253 PIT */
+	out_byte(TIMER_MODE, RATE_GENERATOR);
+	out_byte(TIMER0, (t_8) (TIMER_FREQ/HZ) );
+	out_byte(TIMER0, (t_8) ((TIMER_FREQ/HZ) >> 8));
+	/* 初始化 8253 PIT 完毕 */
 	
 	put_irq_handler(CLOCK_IRQ, clock_handler);	/* 设定时钟中断处理程序 */
 	enable_irq(CLOCK_IRQ);				/* 让8259A可以接收时钟中断 */
@@ -70,10 +79,8 @@ PUBLIC int tinix_main()
 void TestA()
 {
 	while(1){
-		disp_str("A");
-		disp_int(get_ticks());
-		disp_str(".");
-		delay(1);
+		disp_str("A.");
+		milli_delay(10);
 	}
 }
 
@@ -83,12 +90,9 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
-	int i = 0;
 	while(1){
-		disp_str("B");
-		disp_int(i++);
-		disp_str(".");
-		delay(1);
+		disp_str("B.");
+		milli_delay(10);
 	}
 }
 
@@ -98,12 +102,9 @@ void TestB()
  *======================================================================*/
 void TestC()
 {
-	int i = 0;
 	while(1){
-		disp_str("C");
-		disp_int(i++);
-		disp_str(".");
-		delay(1);
+		disp_str("C.");
+		milli_delay(10);
 	}
 }
 
