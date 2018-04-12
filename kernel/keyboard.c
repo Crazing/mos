@@ -19,11 +19,11 @@ PRIVATE	KB_INPUT	kb_in;
 PRIVATE	t_bool		code_with_E0;
 PRIVATE	t_bool		shift_l;		/* l shift state	*/
 PRIVATE	t_bool		shift_r;		/* r shift state	*/
-PRIVATE	t_bool		alt_l;			/* l alt state		*/
-PRIVATE	t_bool		alt_r;			/* r left state		*/
-PRIVATE	t_bool		ctrl_l;			/* l ctrl state		*/
-PRIVATE	t_bool		ctrl_r;			/* l ctrl state		*/
-PRIVATE	int		column		= 0;	/* keyrow[column] 将是 keymap 中某一个值 */
+PRIVATE	t_bool		alt_l  ;			/* l alt state		*/
+PRIVATE	t_bool		alt_r  ;			/* r left state		*/
+PRIVATE	t_bool		ctrl_l ;			/* l ctrl state		*/
+PRIVATE	t_bool		ctrl_r ;			/* l ctrl state		*/
+PRIVATE	int			column		= 0;	/* keyrow[column] 将是 keymap 中某一个值 */
 
 /* 本文件内函数声明 */
 PRIVATE t_8 get_byte_from_kb_buf();
@@ -51,6 +51,13 @@ PUBLIC void keyboard_handler(int irq)
 *======================================================================*/
 PUBLIC void init_keyboard()
 {
+	shift_l= FALSE;
+	shift_r= FALSE;
+	alt_l  = FALSE;
+	alt_r  = FALSE;
+	ctrl_l = FALSE;
+	ctrl_r = FALSE;
+	
 	kb_in.count = 0;
 	kb_in.p_head = kb_in.p_tail = kb_in.buf;
 
