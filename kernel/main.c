@@ -59,14 +59,8 @@ PUBLIC int tinix_main()
 
 	p_proc_ready	= proc_table;
 	
-	/* 初始化 8253 PIT */
-	out_byte(TIMER_MODE, RATE_GENERATOR);
-	out_byte(TIMER0, (t_8) (TIMER_FREQ/HZ) );
-	out_byte(TIMER0, (t_8) ((TIMER_FREQ/HZ) >> 8));
-	/* 初始化 8253 PIT 完毕 */
-	
-	put_irq_handler(CLOCK_IRQ, clock_handler);	/* 设定时钟中断处理程序 */
-	enable_irq(CLOCK_IRQ);				/* 让8259A可以接收时钟中断 */
+	init_clock();
+	init_keyboard();
 
 	restart();
 
@@ -79,7 +73,6 @@ PUBLIC int tinix_main()
 void TestA()
 {
 	while(1){
-		disp_str("A.");
 		milli_delay(10);
 	}
 }
@@ -90,8 +83,8 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
+	int i = 0;
 	while(1){
-		disp_str("B.");
 		milli_delay(10);
 	}
 }
@@ -102,8 +95,8 @@ void TestB()
  *======================================================================*/
 void TestC()
 {
+	int i = 0;
 	while(1){
-		disp_str("C.");
 		milli_delay(10);
 	}
 }

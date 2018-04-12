@@ -1,6 +1,6 @@
 
 /*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                               proc.c
+                               tty.c
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                                     Forrest Yu, 2005
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -12,38 +12,30 @@
 #include "string.h"
 #include "proc.h"
 #include "global.h"
+#include "keyboard.h"
 
 
 /*======================================================================*
-                              schedule
+                           task_tty
  *======================================================================*/
-PUBLIC void schedule()
+PUBLIC void task_tty()
 {
-	PROCESS*	p;
-	int		greatest_ticks = 0;
-
-	while (!greatest_ticks) {
-		for (p=proc_table; p<proc_table+NR_TASKS; p++) {
-			if (p->ticks > greatest_ticks) {
-				greatest_ticks = p->ticks;
-				p_proc_ready = p;
-			}
-		}
-
-		if (!greatest_ticks) {
-			for (p=proc_table; p<proc_table+NR_TASKS; p++) {
-				p->ticks = p->priority;
-			}
-		}
+	while (1) {/* forever. yes, forever, there's something which is some kind of forever... */
+		keyboard_read();
 	}
 }
 
 
 /*======================================================================*
-                           sys_get_ticks
- *======================================================================*/
-PUBLIC int sys_get_ticks()
+                           in_process
+*======================================================================*/
+PUBLIC void in_process(t_32 key)
 {
-	return ticks;
+	char	output[2] = {'\0', '\0'};
+
+	if (!(key & FLAG_EXT)) {
+		output[0] = key & 0xFF;
+		disp_str(output);
+	}
 }
 

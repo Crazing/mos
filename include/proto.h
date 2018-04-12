@@ -8,6 +8,8 @@
 /* klib.asm */
 PUBLIC void	out_byte(t_port port, t_8 value);
 PUBLIC t_8	in_byte(t_port port);
+PUBLIC void	disable_int();
+PUBLIC void	enable_int();
 PUBLIC void	disp_str(char * info);
 PUBLIC void	disp_color_str(char * info, int color);
 
@@ -21,12 +23,12 @@ PUBLIC void	enable_irq(int irq);
 PUBLIC void	delay(int time);
 
 /* kernel.asm */
-void restart();
+PUBLIC void restart();
 
 /* main.c */
-void TestA();
-void TestB();
-void TestC();
+PUBLIC void TestA();
+PUBLIC void TestB();
+PUBLIC void TestC();
 
 /* i8259.c */
 PUBLIC void put_irq_handler(int iIRQ, t_pf_irq_handler handler);
@@ -38,6 +40,14 @@ PUBLIC void milli_delay(int milli_sec);
 
 /* proc.c */
 PUBLIC void schedule();
+
+/* keyboard.c */
+PUBLIC void keyboard_handler(int irq);
+
+/* tty.c */
+PUBLIC void task_tty();
+PUBLIC void in_process(t_32 key);
+
 
 
 /************************************************************************/

@@ -21,6 +21,8 @@ global	out_byte
 global	in_byte
 global	enable_irq
 global	disable_irq
+global	enable_int
+global	disable_int
 
 ; ========================================================================
 ;                  void disp_str(char * info);
@@ -191,4 +193,18 @@ enable_8:
         out	INT_S_CTLMASK, al	; clear bit at slave 8259
         popf
         ret
+
+; ========================================================================
+;                  void disable_int();
+; ========================================================================
+disable_int:
+	cli
+	ret
+
+; ========================================================================
+;                  void enable_int();
+; ========================================================================
+enable_int:
+	sti
+	ret
 
