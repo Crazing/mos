@@ -25,9 +25,9 @@ PRIVATE	t_bool		alt_l;			/* l alt state		*/
 PRIVATE	t_bool		alt_r;			/* r left state		*/
 PRIVATE	t_bool		ctrl_l;			/* l ctrl state		*/
 PRIVATE	t_bool		ctrl_r;			/* l ctrl state		*/
-PRIVATE	int		column		= 0;	/* keyrow[column] ï¿½ï¿½ï¿½ï¿½ keymap ï¿½ï¿½Ä³Ò»ï¿½ï¿½Öµ */
+PRIVATE	int		column		= 0;	/* keyrow[column] ½«ÊÇ keymap ÖÐÄ³Ò»¸öÖµ */
 
-/* ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Úºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* ±¾ÎÄ¼þÄÚº¯ÊýÉùÃ÷ */
 PRIVATE t_8 get_byte_from_kb_buf();
 
 /*======================================================================*
@@ -58,13 +58,13 @@ PUBLIC void init_keyboard()
 	alt_l  = FALSE;
 	alt_r  = FALSE;
 	ctrl_l = FALSE;
-	ctrl_r = FALSE;
-	
+	ctrl_r = FALSE;	
+
 	kb_in.count = 0;
 	kb_in.p_head = kb_in.p_tail = kb_in.buf;
 
-	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);	/* ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-	enable_irq(KEYBOARD_IRQ);				/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ */
+	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);	/* Éè¶¨¼üÅÌÖÐ¶Ï´¦Àí³ÌÐò */
+	enable_irq(KEYBOARD_IRQ);				/* ¿ª¼üÅÌÖÐ¶Ï */
 }
 
 
@@ -76,15 +76,15 @@ PUBLIC void keyboard_read(TTY* p_tty)
 	t_8	scan_code;
 	t_bool	make;	/* TRUE : make  */
 			/* FALSE: break */
-	t_32	key = 0;/* ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-			/* ï¿½ï¿½ï¿½ç£¬ï¿½ï¿½ï¿½ Home ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ key Öµï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ keyboard.h ï¿½Ðµï¿½ 'HOME'ï¿½ï¿½*/
-	t_32*	keyrow;	/* Ö¸ï¿½ï¿½ keymap[] ï¿½ï¿½Ä³Ò»ï¿½ï¿½ */
+	t_32	key = 0;/* ÓÃÒ»¸öÕûÐÍÀ´±íÊ¾Ò»¸ö¼ü¡£ */
+			/* ±ÈÈç£¬Èç¹û Home ±»°´ÏÂ£¬Ôò key Öµ½«Îª¶¨ÒåÔÚ keyboard.h ÖÐµÄ 'HOME'¡£*/
+	t_32*	keyrow;	/* Ö¸Ïò keymap[] µÄÄ³Ò»ÐÐ */
 
 	if(kb_in.count > 0){
 		code_with_E0 = FALSE;
 		scan_code = get_byte_from_kb_buf();
 
-		/* ï¿½ï¿½ï¿½æ¿ªÊ¼ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½ï¿½ï¿½ */
+		/* ÏÂÃæ¿ªÊ¼½âÎöÉ¨ÃèÂë */
 		if (scan_code == 0xE1) {
 			int i;
 			t_8 pausebreak_scan_code[] = {0xE1, 0x1D, 0x45, 0xE1, 0x9D, 0xC5};
@@ -100,38 +100,37 @@ PUBLIC void keyboard_read(TTY* p_tty)
 			}
 		}
 		else if (scan_code == 0xE0) {
+			code_with_E0 = TRUE;
 			scan_code = get_byte_from_kb_buf();
 
-			/* PrintScreen ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+			/* PrintScreen ±»°´ÏÂ */
 			if (scan_code == 0x2A) {
-				if (get_byte_from_kb_buf() == 0xE0) {
-					if (get_byte_from_kb_buf() == 0x37) {
+				code_with_E0 = FALSE;
+				if ((scan_code = get_byte_from_kb_buf()) == 0xE0) {
+					code_with_E0 = TRUE;
+					if ((scan_code = get_byte_from_kb_buf()) == 0x37) {
 						key = PRINTSCREEN;
 						make = TRUE;
 					}
 				}
 			}
-
-			/* PrintScreen ï¿½ï¿½ï¿½Í·ï¿½ */
-			if (scan_code == 0xB7) {
-				if (get_byte_from_kb_buf() == 0xE0) {
-					if (get_byte_from_kb_buf() == 0xAA) {
+			/* PrintScreen ±»ÊÍ·Å */
+			else if (scan_code == 0xB7) {
+				code_with_E0 = FALSE;
+				if ((scan_code = get_byte_from_kb_buf()) == 0xE0) {
+					code_with_E0 = TRUE;
+					if ((scan_code = get_byte_from_kb_buf()) == 0xAA) {
 						key = PRINTSCREEN;
 						make = FALSE;
 					}
 				}
 			}
-
-			/* ï¿½ï¿½ï¿½ï¿½ PrintScreenï¿½ï¿½ï¿½ï¿½Ê± scan_code Îª 0xE0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½Öµï¿½ï¿½ */
-			if (key == 0) {
-				code_with_E0 = TRUE;
-			}
-		}
+		} /* Èç¹û²»ÊÇ PrintScreen¡£Ôò´ËÊ± scan_code Îª 0xE0 ½ô¸úµÄÄÇ¸öÖµ¡£ */
 		if ((key != PAUSEBREAK) && (key != PRINTSCREEN)) {
-			/* ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½Make Code ï¿½ï¿½ï¿½ï¿½ Break Code */
+			/* Ê×ÏÈÅÐ¶ÏMake Code »¹ÊÇ Break Code */
 			make = (scan_code & FLAG_BREAK ? FALSE : TRUE);
 			
-			/* ï¿½È¶ï¿½Î»ï¿½ï¿½ keymap ï¿½Ðµï¿½ï¿½ï¿½ */
+			/* ÏÈ¶¨Î»µ½ keymap ÖÐµÄÐÐ */
 			keyrow = &keymap[(scan_code & 0x7F) * MAP_COLS];
 
 			column = 0;
@@ -170,7 +169,7 @@ PUBLIC void keyboard_read(TTY* p_tty)
 			}
 		}
 
-		if(make){ /* ï¿½ï¿½ï¿½ï¿½ Break Code */
+		if(make){ /* ºöÂÔ Break Code */
 			key |= shift_l	? FLAG_SHIFT_L	: 0;
 			key |= shift_r	? FLAG_SHIFT_R	: 0;
 			key |= ctrl_l	? FLAG_CTRL_L	: 0;
@@ -187,11 +186,11 @@ PUBLIC void keyboard_read(TTY* p_tty)
 /*======================================================================*
                            get_byte_from_kb_buf
 *======================================================================*/
-PRIVATE t_8 get_byte_from_kb_buf()	/* ï¿½Ó¼ï¿½ï¿½Ì»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½È¡ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½ï¿½ */
+PRIVATE t_8 get_byte_from_kb_buf()	/* ´Ó¼üÅÌ»º³åÇøÖÐ¶ÁÈ¡ÏÂÒ»¸ö×Ö½Ú */
 {
 	t_8	scan_code;
 
-	while (kb_in.count <= 0) {}	/* ï¿½È´ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½Úµï¿½ï¿½ï¿½ */
+	while (kb_in.count <= 0) {}	/* µÈ´ýÏÂÒ»¸ö×Ö½Úµ½À´ */
 
 	disable_int();
 	scan_code = *(kb_in.p_tail);
