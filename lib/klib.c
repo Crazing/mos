@@ -8,10 +8,21 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
+#include "tty.h"
+#include "console.h"
 #include "global.h"
+#include "proto.h"
+
+
+/*======================================================================*
+                               is_alphanumeric
+ *======================================================================*/
+PUBLIC t_bool is_alphanumeric(char ch)
+{
+	return ((ch >= ' ') && (ch <= '~'));
+}
 
 
 /*======================================================================*

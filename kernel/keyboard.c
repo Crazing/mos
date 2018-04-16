@@ -8,24 +8,26 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
+#include "tty.h"
+#include "console.h"
 #include "global.h"
 #include "keyboard.h"
 #include "keymap.h"
+#include "proto.h"
 
 PRIVATE	KB_INPUT	kb_in;
-PRIVATE	t_bool		code_with_E0;
+PRIVATE	t_bool		code_with_E0	= FALSE;
 PRIVATE	t_bool		shift_l;		/* l shift state	*/
 PRIVATE	t_bool		shift_r;		/* r shift state	*/
-PRIVATE	t_bool		alt_l  ;			/* l alt state		*/
-PRIVATE	t_bool		alt_r  ;			/* r left state		*/
-PRIVATE	t_bool		ctrl_l ;			/* l ctrl state		*/
-PRIVATE	t_bool		ctrl_r ;			/* l ctrl state		*/
-PRIVATE	int			column		= 0;	/* keyrow[column] ½«ÊÇ keymap ÖÐÄ³Ò»¸öÖµ */
+PRIVATE	t_bool		alt_l;			/* l alt state		*/
+PRIVATE	t_bool		alt_r;			/* r left state		*/
+PRIVATE	t_bool		ctrl_l;			/* l ctrl state		*/
+PRIVATE	t_bool		ctrl_r;			/* l ctrl state		*/
+PRIVATE	int		column		= 0;	/* keyrow[column] ï¿½ï¿½ï¿½ï¿½ keymap ï¿½ï¿½Ä³Ò»ï¿½ï¿½Öµ */
 
-/* ±¾ÎÄ¼þÄÚº¯ÊýÉùÃ÷ */
+/* ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Úºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 PRIVATE t_8 get_byte_from_kb_buf();
 
 /*======================================================================*
@@ -61,29 +63,28 @@ PUBLIC void init_keyboard()
 	kb_in.count = 0;
 	kb_in.p_head = kb_in.p_tail = kb_in.buf;
 
-	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);	/* Éè¶¨¼üÅÌÖÐ¶Ï´¦Àí³ÌÐò */
-	enable_irq(KEYBOARD_IRQ);				/* ¿ª¼üÅÌÖÐ¶Ï */
+	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);	/* ï¿½è¶¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	enable_irq(KEYBOARD_IRQ);				/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ */
 }
 
 
 /*======================================================================*
                            keyboard_read
 *======================================================================*/
-PUBLIC void keyboard_read()
+PUBLIC void keyboard_read(TTY* p_tty)
 {
 	t_8	scan_code;
 	t_bool	make;	/* TRUE : make  */
 			/* FALSE: break */
-	t_32	key = 0;/* ÓÃÒ»¸öÕûÐÍÀ´±íÊ¾Ò»¸ö¼ü¡£ */
-			/* ±ÈÈç£¬Èç¹û Home ±»°´ÏÂ£¬Ôò key Öµ½«Îª¶¨ÒåÔÚ keyboard.h ÖÐµÄ 'HOME'¡£*/
-	t_32*	keyrow;	/* Ö¸Ïò keymap[] µÄÄ³Ò»ÐÐ */
+	t_32	key = 0;/* ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+			/* ï¿½ï¿½ï¿½ç£¬ï¿½ï¿½ï¿½ Home ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½ key Öµï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ keyboard.h ï¿½Ðµï¿½ 'HOME'ï¿½ï¿½*/
+	t_32*	keyrow;	/* Ö¸ï¿½ï¿½ keymap[] ï¿½ï¿½Ä³Ò»ï¿½ï¿½ */
 
 	if(kb_in.count > 0){
 		code_with_E0 = FALSE;
-
 		scan_code = get_byte_from_kb_buf();
 
-		/* ÏÂÃæ¿ªÊ¼½âÎöÉ¨ÃèÂë */
+		/* ï¿½ï¿½ï¿½æ¿ªÊ¼ï¿½ï¿½ï¿½ï¿½É¨ï¿½ï¿½ï¿½ï¿½ */
 		if (scan_code == 0xE1) {
 			int i;
 			t_8 pausebreak_scan_code[] = {0xE1, 0x1D, 0x45, 0xE1, 0x9D, 0xC5};
@@ -101,7 +102,7 @@ PUBLIC void keyboard_read()
 		else if (scan_code == 0xE0) {
 			scan_code = get_byte_from_kb_buf();
 
-			/* PrintScreen ±»°´ÏÂ */
+			/* PrintScreen ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 			if (scan_code == 0x2A) {
 				if (get_byte_from_kb_buf() == 0xE0) {
 					if (get_byte_from_kb_buf() == 0x37) {
@@ -111,7 +112,7 @@ PUBLIC void keyboard_read()
 				}
 			}
 
-			/* PrintScreen ±»ÊÍ·Å */
+			/* PrintScreen ï¿½ï¿½ï¿½Í·ï¿½ */
 			if (scan_code == 0xB7) {
 				if (get_byte_from_kb_buf() == 0xE0) {
 					if (get_byte_from_kb_buf() == 0xAA) {
@@ -121,16 +122,16 @@ PUBLIC void keyboard_read()
 				}
 			}
 
-			/* ²»ÊÇ PrintScreen¡£´ËÊ± scan_code Îª 0xE0 ½ô¸úµÄÄÇ¸öÖµ¡£ */
+			/* ï¿½ï¿½ï¿½ï¿½ PrintScreenï¿½ï¿½ï¿½ï¿½Ê± scan_code Îª 0xE0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½Öµï¿½ï¿½ */
 			if (key == 0) {
 				code_with_E0 = TRUE;
 			}
 		}
 		if ((key != PAUSEBREAK) && (key != PRINTSCREEN)) {
-			/* Ê×ÏÈÅÐ¶ÏMake Code »¹ÊÇ Break Code */
+			/* ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½Make Code ï¿½ï¿½ï¿½ï¿½ Break Code */
 			make = (scan_code & FLAG_BREAK ? FALSE : TRUE);
 			
-			/* ÏÈ¶¨Î»µ½ keymap ÖÐµÄÐÐ */
+			/* ï¿½È¶ï¿½Î»ï¿½ï¿½ keymap ï¿½Ðµï¿½ï¿½ï¿½ */
 			keyrow = &keymap[(scan_code & 0x7F) * MAP_COLS];
 
 			column = 0;
@@ -169,7 +170,7 @@ PUBLIC void keyboard_read()
 			}
 		}
 
-		if(make){ /* ºöÂÔ Break Code */
+		if(make){ /* ï¿½ï¿½ï¿½ï¿½ Break Code */
 			key |= shift_l	? FLAG_SHIFT_L	: 0;
 			key |= shift_r	? FLAG_SHIFT_R	: 0;
 			key |= ctrl_l	? FLAG_CTRL_L	: 0;
@@ -177,7 +178,7 @@ PUBLIC void keyboard_read()
 			key |= alt_l	? FLAG_ALT_L	: 0;
 			key |= alt_r	? FLAG_ALT_R	: 0;
 
-			in_process(key);
+			in_process(p_tty, key);
 		}
 	}
 }
@@ -186,11 +187,11 @@ PUBLIC void keyboard_read()
 /*======================================================================*
                            get_byte_from_kb_buf
 *======================================================================*/
-PRIVATE t_8 get_byte_from_kb_buf()	/* ´Ó¼üÅÌ»º³åÇøÖÐ¶ÁÈ¡ÏÂÒ»¸ö×Ö½Ú */
+PRIVATE t_8 get_byte_from_kb_buf()	/* ï¿½Ó¼ï¿½ï¿½Ì»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½È¡ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½ï¿½ */
 {
 	t_8	scan_code;
 
-	while (kb_in.count <= 0) {}	/* µÈ´ýÏÂÒ»¸ö×Ö½Úµ½À´ */
+	while (kb_in.count <= 0) {}	/* ï¿½È´ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ö½Úµï¿½ï¿½ï¿½ */
 
 	disable_int();
 	scan_code = *(kb_in.p_tail);
@@ -200,6 +201,12 @@ PRIVATE t_8 get_byte_from_kb_buf()	/* ´Ó¼üÅÌ»º³åÇøÖÐ¶ÁÈ¡ÏÂÒ»¸ö×Ö½Ú */
 	}
 	kb_in.count--;
 	enable_int();
+
+#ifdef __TINIX_DEBUG__
+	disp_color_str("[", MAKE_COLOR(WHITE,BLUE));
+	disp_int(scan_code);
+	disp_color_str("]", MAKE_COLOR(WHITE,BLUE));
+#endif
 
 	return scan_code;
 }

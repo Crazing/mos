@@ -8,10 +8,12 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
+#include "tty.h"
+#include "console.h"
 #include "global.h"
+#include "proto.h"
 
 
 
@@ -25,7 +27,7 @@ PUBLIC void clock_handler(int irq)
 	p_proc_ready->ticks--;
 
 	if (k_reenter != 0) {
-		disp_str("!");
+		//disp_str("!");
 		return;
 	}
 
@@ -59,7 +61,7 @@ PUBLIC void init_clock()
 	out_byte(TIMER0, (t_8) ((TIMER_FREQ/HZ) >> 8));
 
 	put_irq_handler(CLOCK_IRQ, clock_handler);	/* 设定时钟中断处理程序 */
-	//enable_irq(CLOCK_IRQ);				/* 让8259A可以接收时钟中断 */
+	enable_irq(CLOCK_IRQ);				/* 让8259A可以接收时钟中断 */
 }
 
 

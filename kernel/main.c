@@ -8,10 +8,12 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
+#include "tty.h"
+#include "console.h"
 #include "global.h"
+#include "proto.h"
 
 
 /*======================================================================*
@@ -52,7 +54,8 @@ PUBLIC int tinix_main()
 	}
 	proc_table[0].ticks = proc_table[0].priority = 15;
 	proc_table[1].ticks = proc_table[1].priority =  5;
-	proc_table[2].ticks = proc_table[2].priority =  3;
+	proc_table[2].ticks = proc_table[2].priority =  5;
+	proc_table[3].ticks = proc_table[3].priority =  5;
 
 	k_reenter	= 0;
 	ticks		= 0;
@@ -60,7 +63,6 @@ PUBLIC int tinix_main()
 	p_proc_ready	= proc_table;
 	
 	init_clock();
-	init_keyboard();
 
 	restart();
 

@@ -9,6 +9,9 @@
 #define	_TINIX_CONST_H_
 
 
+//#define __TINIX_DEBUG__
+
+
 /* EXTERN */
 #define	EXTERN	extern	/* EXTERN is defined as extern except in global.c */
 
@@ -33,7 +36,7 @@
 #define	BLUE	0x1	/* 0001 */
 #define	FLASH	0x80	/* 1000 0000 */
 #define	BRIGHT	0x08	/* 0000 1000 */
-#define	MAKE_COLOR(x,y)	(x | y)	/* MAKE_COLOR(Background,Foreground) */
+#define	MAKE_COLOR(x,y)	((x<<4) | y)	/* MAKE_COLOR(Background,Foreground) */
 
 /* GDT 和 IDT 中描述符的个数 */
 #define	GDT_SIZE	128
@@ -47,6 +50,9 @@
 #define	RPL_KRNL	SA_RPL0
 #define	RPL_TASK	SA_RPL1
 #define	RPL_USER	SA_RPL3
+
+/* TTY */
+#define	NR_CONSOLES	3	/* consoles */
 
 /* 8259A interrupt controller ports. */
 #define	INT_M_CTL	0x20	/* I/O port for interrupt controller         <Master> */
@@ -69,6 +75,17 @@
 #define	KB_CMD		0x64	/* I/O port for keyboard command
 					Read : Read Status Register
 					Write: Write Input Buffer(8042 Command) */
+
+/* VGA */
+#define CRTC_ADDR_REG			0x3D4	/* CRT Controller Registers - Address Register */
+#define CRTC_DATA_REG			0x3D5	/* CRT Controller Registers - Data Registers */
+#define CRTC_DATA_IDX_START_ADDR_H	0xC	/* register index of video mem start address (MSB) */
+#define CRTC_DATA_IDX_START_ADDR_L	0xD	/* register index of video mem start address (LSB) */
+#define CRTC_DATA_IDX_CURSOR_H		0xE	/* register index of cursor position (MSB) */
+#define CRTC_DATA_IDX_CURSOR_L		0xF	/* register index of cursor position (LSB) */
+#define V_MEM_BASE			0xB8000	/* base of color video memory */
+#define V_MEM_SIZE			0x8000	/* 32K: B8000H -> BFFFFH */
+
 
 /* Hardware interrupts */
 #define	NR_IRQ		16	/* Number of IRQs */
