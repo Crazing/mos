@@ -1,8 +1,0 @@
-megs: 32
-romimage: file=$BXSHARE/BIOS-bochs-latest, options=fastboot
-vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
-mouse: enabled=0
-floppya: 1_44=mos.img, status=inserted
-boot: floppy
-log: bochsout.txt
-keyboard: keymap=$BXSHARE/keymaps/x11-pc-de.map
