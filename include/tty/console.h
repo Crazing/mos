@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:26:16 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Wednesday, 25th April 2018 9:47:49 pm
+ * Last Modified: Monday, 30th April 2018 1:06:08 am
  * Modified By: zhixiang
  * -----
  * FileContent: 控制台函数
@@ -17,17 +17,14 @@
 #include "global.h"
 #include "common.h"
 
-//初始化控制台
-void init_screen(TTY* p_tty);
+//申请一个控制台
+t_bool apply_console(CONSOLE** p_pcon);
 
 //选择控制台
-void select_console(t_32 nr_console);
+void select_console(const CONSOLE* p_con);
 
 //向控制台输出字符
-void out_char(CONSOLE* p_con, t_8 ch);
-
-//判断是否是活动控制台
-t_bool is_current_console(CONSOLE* p_con);
+void out_char(CONSOLE* p_con, ut_8 ch);
 
 /*======================================================================*
                            scroll_screen

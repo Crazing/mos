@@ -78,6 +78,14 @@ _start:
 
 
     ; 内核从这里开始运行
+    ; 初始化bss段，全部清0
+    mov  eax, 0
+    mov  edi, __bss_start
+clear_bss:
+    stosd
+    cmp  edi, _end
+    jnz  clear_bss
+
 	; 把 esp 从 LOADER 挪到 KERNEL
 	mov	 esp, StackTop	  ; 堆栈在 bss 段中
 	call      init_kernel ; 初始化内核

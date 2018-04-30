@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 4:08:47 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Thursday, 26th April 2018 10:11:33 pm
+ * Last Modified: Sunday, 29th April 2018 10:12:39 pm
  * Modified By: zhixiang
  * -----
  * FileContent: ¹«¹²»ù´¡¿â
@@ -14,7 +14,7 @@
 #include "common.h"
 
 //ÕûĞÎ×ª×Ö·û´®
-t_8 * itoa(t_8 * str, t_32 num)/* Êı×ÖÇ°ÃæµÄ 0 ²»±»ÏÔÊ¾³öÀ´, ±ÈÈç 0000B800 ±»ÏÔÊ¾³É B800 */
+t_8 * itoa(t_8 * str, ut_32 num)/* Êı×ÖÇ°ÃæµÄ 0 ²»±»ÏÔÊ¾³öÀ´, ±ÈÈç 0000B800 ±»ÏÔÊ¾³É B800 */
 {
 	t_8 *	p = str;
 	t_8	    ch;
@@ -48,7 +48,7 @@ t_8 * itoa(t_8 * str, t_32 num)/* Êı×ÖÇ°ÃæµÄ 0 ²»±»ÏÔÊ¾³öÀ´, ±ÈÈç 0000B800 ±»ÏÔÊ
 
 
 //´òÓ¡ÕûĞÎ
-void disp_int(t_32 input)
+void disp_int(ut_32 input)
 {
 	t_8 output[16];
 	itoa(output, input);

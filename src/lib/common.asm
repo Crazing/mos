@@ -25,14 +25,15 @@ global	enable_irq
 global  disable_int;
 global  enable_int;
 
-;函数声明：void disp_str(char * info);
+;函数声明：void disp_str(t_8 * info);
 disp_str:
 	push	ebp
 	mov	ebp, esp
-
-	mov	esi, [ebp + 8]	; pszInfo
-	mov	edi, [disp_pos]
-	mov	ah, 0Fh
+    pushf
+    
+	mov	 esi, [ebp + 8]	; pszInfo
+	mov	 edi, [disp_pos]
+	mov	 ah, 0Fh
 .1:
 	lodsb
 	test	al, al
@@ -58,17 +59,19 @@ disp_str:
 .2:
 	mov	[disp_pos], edi
 
+    popf
 	pop	ebp
 	ret
 
-;函数声明：void disp_color_str(char * info, int color);
+;函数声明：void disp_color_str(t_8 * info, t_32 color);
 disp_color_str:
 	push	ebp
 	mov	ebp, esp
+    pushf
 
 	mov	esi, [ebp + 8]	; pszInfo
-	mov	edi, [disp_pos]
-	mov	ah, [ebp + 12]	; color
+	mov	ah,  [ebp + 12]	; color
+    mov	edi, [disp_pos]
 .1:
 	lodsb
 	test	al, al
@@ -94,28 +97,30 @@ disp_color_str:
 .2:
 	mov	[disp_pos], edi
 
+    popf
 	pop	ebp
 	ret
 
 
-; void out_byte(t_port port, t_8 value);
+; void out_byte(t_port port, ut_8 value);
 out_byte:
     push	ebp
 	mov	 ebp, esp
+    pushf
 
-    push edx
-	mov	 edx, [esp + 12]		; port
-	mov  al, [esp + 12 + 4]	; value
+	mov	 edx, [ebp + 8]		; port
+	mov  al,  [ebp + 12]	; value
 	out	 dx, al
-    pop  edx
 
 	nop	; 一点延迟
 	nop
+    
+    popf
     pop	 ebp
 	ret
 
 
-; t_8 in_byte(t_port port);
+; ut_8 in_byte(t_port port);
 in_byte:
     push	ebp
 	mov	 ebp, esp
@@ -132,7 +137,7 @@ in_byte:
 	ret
 
 ; ========================================================================
-;                  t_32 disable_irq(int irq);
+;                  t_32 disable_irq(t_32 irq);
 ; ========================================================================
 ; Disable an interrupt request line by setting an 8259 bit.
 ; Equivalent code for irq < 8:
@@ -142,10 +147,9 @@ in_byte:
 disable_irq:
     push	ebp
 	mov	 ebp, esp
-
-    push ecx
-	mov	 ecx, [esp + 12]		; irq
 	pushf
+
+	mov	 ecx, [ebp + 8]		; irq
 	cli
 	mov	ah, 1
 	rol	ah, cl			; ah = (1 << (irq % 8))
@@ -159,7 +163,6 @@ disable_0:
 	out	INT_M_CTLMASK, al	; set bit at master 8259
 	popf
 	mov	eax, 1			; disabled by this function
-    pop ecx
     pop ebp
 	ret
 disable_8:
@@ -170,18 +173,16 @@ disable_8:
 	out	INT_S_CTLMASK, al	; set bit at slave 8259
 	popf
 	mov	eax, 1			; disabled by this function
-    pop ecx
     pop ebp
 	ret
 dis_already:
 	popf
 	xor	eax, eax		; already disabled
-    pop ecx
     pop ebp
 	ret
 
 ; ========================================================================
-;                  void enable_irq(int irq);
+;                  void enable_irq(t_32 irq);
 ; ========================================================================
 ; Enable an interrupt request line by clearing an 8259 bit.
 ; Equivalent code:
@@ -193,33 +194,29 @@ dis_already:
 ;	}
 ;
 enable_irq:
-        push	ebp
-	    mov	 ebp, esp
-
-        push ecx
-        mov	ecx, [esp + 12]		; irq
-        pushf
-        cli
-        mov	ah, ~1
-        rol	ah, cl			; ah = ~(1 << (irq % 8))
-        cmp	cl, 8
-        jae	enable_8		; enable irq >= 8 at the slave 8259
+    push	ebp
+	mov	 ebp, esp
+    pushf
+    mov	ecx, [ebp + 8]		; irq
+    cli
+    mov	ah, ~1
+    rol	ah, cl			    ; ah = ~(1 << (irq % 8))
+    cmp	cl, 8
+    jae	enable_8		    ; enable irq >= 8 at the slave 8259
 enable_0:
-        in	al, INT_M_CTLMASK
-        and	al, ah
-        out	INT_M_CTLMASK, al	; clear bit at master 8259
-        popf
-        pop ecx
-        pop ebp
-        ret
+    in	al, INT_M_CTLMASK
+    and	al, ah
+    out	INT_M_CTLMASK, al	; clear bit at master 8259
+    popf
+    pop ebp
+    ret
 enable_8:
-        in	al, INT_S_CTLMASK
-        and	al, ah
-        out	INT_S_CTLMASK, al	; clear bit at slave 8259
-        popf
-        pop ecx
-        pop ebp
-        ret
+    in	al, INT_S_CTLMASK
+    and	al, ah
+    out	INT_S_CTLMASK, al	; clear bit at slave 8259
+    popf
+    pop ebp
+    ret
 
 
 ;void disable_int();

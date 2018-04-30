@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 11:45:55 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 10:19:47 am
+ * Last Modified: Monday, 30th April 2018 12:21:43 am
  * Modified By: zhixiang
  * -----
  * FileContent: 全局常量定义
@@ -18,6 +18,8 @@
 #define	TRUE	1
 #define	FALSE	0
 
+//空指针
+#define NULL    0
 /* GDT */
 /* 描述符索引 */
 #define	INDEX_DUMMY		    0	// ┓
@@ -154,7 +156,7 @@
 
 /* 宏 */
 /* 段基址加上段偏移 */
-#define GETVIRADDR(seg_base, vir)	(t_32)(((t_32)seg_base) + (t_32)(vir))
+#define GETVIRADDR(seg_base, vir)	(ut_32)(((ut_32)seg_base) + (ut_32)(vir))
 
 /* 每个任务有一个单独的 LDT, 每个 LDT 中的描述符个数: */
 #define LDT_SIZE		2

@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:43:42 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 10:34:18 am
+ * Last Modified: Monday, 30th April 2018 5:49:42 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 键盘输入处理程序
@@ -14,19 +14,19 @@
 #include "keyboard.h"
 
 static	KB_INPUT	kb_in;
-static	t_bool		code_with_E0;
-static	t_bool		shift_l;		/* l shift state	*/
-static	t_bool		shift_r;		/* r shift state	*/
-static	t_bool		alt_l;			/* l alt state		*/
-static	t_bool		alt_r;			/* r left state		*/
-static	t_bool		ctrl_l;		 	/* l ctrl state		*/
-static	t_bool		ctrl_r;			/* l ctrl state		*/
-static	t_32		column;	        /* keyrow[column] 将是 keymap 中某一个值 */
+static	t_bool		code_with_E0 = FALSE;
+static	t_bool		shift_l      = FALSE;		/* l shift state	*/
+static	t_bool		shift_r      = FALSE;		/* r shift state	*/
+static	t_bool		alt_l        = FALSE;	    /* l alt state		*/
+static	t_bool		alt_r        = FALSE;		/* r left state		*/
+static	t_bool		ctrl_l       = FALSE;		/* l ctrl state		*/
+static	t_bool		ctrl_r       = FALSE;	    /* l ctrl state		*/
+static	t_32		column       = 0;	        /* keyrow[column] 将是 keymap 中某一个值 */
 
 //从键盘输入缓冲区获取一个字符
-static t_8 get_byte_from_kb_buf()	/* 从键盘缓冲区中读取下一个字节 */
+static ut_8 get_byte_from_kb_buf()	/* 从键盘缓冲区中读取下一个字节 */
 {
-	t_8	scan_code;
+	ut_8	scan_code;
 
 	while (kb_in.count <= 0) {}	/* 等待下一个字节到来 */
 
@@ -43,24 +43,23 @@ static t_8 get_byte_from_kb_buf()	/* 从键盘缓冲区中读取下一个字节 */
 }
 
 //从键盘输入缓冲区读取字符，转换成系统可以识别的表示符
-t_bool keyboard_read(t_32* code)
+t_bool keyboard_read(ut_32* code)
 {
-	t_8	scan_code;
+	ut_8	scan_code;
 	t_bool	make;	/* TRUE : make  */
 			        /* FALSE: break */
-	t_32	key = 0;/* 用一个整型来表示一个键。 */
+	ut_32	key = 0;/* 用一个整型来表示一个键。 */
 			        /* 比如，如果 Home 被按下，则 key 值将为定义在 keyboard.h 中的 'HOME'。*/
-	t_32*	keyrow;	/* 指向 keymap[] 的某一行 */
+	ut_32*	keyrow;	/* 指向 keymap[] 的某一行 */
     t_bool  ret = FALSE;
 
 	if(kb_in.count > 0){
 		code_with_E0 = FALSE;
 		scan_code = get_byte_from_kb_buf();
-
 		/* 下面开始解析扫描码 */
 		if (scan_code == 0xE1) {
-			int i;
-			t_8 pausebreak_scan_code[] = {0xE1, 0x1D, 0x45, 0xE1, 0x9D, 0xC5};
+			t_32 i;
+			ut_8 pausebreak_scan_code[] = {0xE1, 0x1D, 0x45, 0xE1, 0x9D, 0xC5};
 			t_bool is_pausebreak = TRUE;
 			for(i=1;i<6;i++){
 				if (get_byte_from_kb_buf() != pausebreak_scan_code[i]) {
@@ -159,9 +158,9 @@ t_bool keyboard_read(t_32* code)
 }
 
 //键盘中断处理函数
-void keyboard_handler(int irq)
+void keyboard_handler(t_32 irq)
 {
-	t_8 scan_code = in_byte(KB_DATA);
+	ut_8 scan_code = in_byte(KB_DATA);
 
 	if (kb_in.count < KB_IN_BYTES) {
 		*(kb_in.p_head) = scan_code;
@@ -176,14 +175,6 @@ void keyboard_handler(int irq)
 //初始化键盘中断
 void init_keyboard()
 {
-    code_with_E0 = FALSE;
-	shift_l      = FALSE;
-	shift_r      = FALSE;
-	alt_l        = FALSE;
-	alt_r        = FALSE;
-	ctrl_l       = FALSE;
-	ctrl_r       = FALSE;	
-    column       = 0;
 	kb_in.count  = 0;
 	kb_in.p_head = kb_in.p_tail = kb_in.buf;
 

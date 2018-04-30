@@ -19,3 +19,10 @@ SELECTOR_TSS		equ		0x20		; TSS. 从外层跳到内存时 SS 和 ESP 的值从里面获得.
 ; 导入函数
 extern	init_kernel
 extern  mos_main
+
+;导入变量
+;ld默认链接脚本中定义的bss段开始位置,ld --verbose
+extern  __bss_start
+ 
+;ld默认链接脚本中定义的段结束位置,由于bss段是最后一个段(需要被忽视，因此最后),可以用做bss结束位置
+extern  _end

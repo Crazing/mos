@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 1:04:49 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Tuesday, 24th April 2018 10:52:59 pm
+ * Last Modified: Monday, 30th April 2018 6:03:41 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 内核主体文件
@@ -24,9 +24,6 @@ void init_kernel();
 
 //内核运行
 void mos_main();
-
-//由段获取段基址
-t_32 get_segaddr(t_16 seg);
 
 // 加载和存储gdt
 void load_gdt(ut_8  *gdt_ptr);

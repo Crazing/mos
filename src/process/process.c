@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 10:59:15 am
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 10:19:04 am
+ * Last Modified: Monday, 30th April 2018 6:17:10 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 进程处理程序主体
@@ -13,23 +13,55 @@
 
 #include "process.h"
 
-PROCESS*	p_proc_ready;
-PROCESS	    proc_table[NR_TASKS];
+static void TestA();
+static void TestB();
+static void TestC();
 
-t_8	        task_stack[STACK_SIZE_TOTAL];
+PROCESS*	    p_proc_ready = NULL;
+PROCESS	        proc_table[NR_TASKS] = {0};
 
-TASK	    task_table[NR_TASKS] = {{task_tty, STACK_SIZE_TTY, "tty"},
-					                {TestA, STACK_SIZE_TESTA, "TestA"},
-					                {TestB, STACK_SIZE_TESTB, "TestB"},
-					                {TestC, STACK_SIZE_TESTC, "TestC"}};
+static t_8	    task_stack[STACK_SIZE_TOTAL] = {0};
+
+static TASK	    task_table[NR_TASKS] = {{task_tty, STACK_SIZE_TTY, "tty"},
+					                    {TestA, STACK_SIZE_TESTA, "TestA"},
+					                    {TestB, STACK_SIZE_TESTB, "TestB"},
+					                    {TestC, STACK_SIZE_TESTC, "TestC"}};
+
+//进程A
+static void TestA()
+{
+	while(1){
+        //disp_int(disp_pos);
+		milli_delay(3000);
+	}
+}
+
+//进程B
+static void TestB()
+{
+	t_32 i = 0;
+	while(1){
+		milli_delay(10);
+	}
+}
+
+//进程C
+static void TestC()
+{
+	t_32 i = 0;
+	while(1){
+		milli_delay(10);
+	}
+}
+
 //初始化进程
 void init_proc()
 {
     TASK*		p_task		= task_table;
 	PROCESS*	p_proc		= proc_table;
-	char*		p_task_stack	= task_stack + STACK_SIZE_TOTAL;
+	t_8*		p_task_stack	= task_stack + STACK_SIZE_TOTAL;
 	t_16		selector_ldt	= SELECTOR_LDT_FIRST;
-	int i;
+	t_32 i;
 	for(i=0;i<NR_TASKS;i++){
 		strcpy(p_proc->name, p_task->name);	// name of the process
 		p_proc->pid	= i;			// pid
@@ -59,9 +91,6 @@ void init_proc()
 	proc_table[2].ticks = proc_table[2].priority =  5;
 	proc_table[3].ticks = proc_table[3].priority =  5;
 
-	k_reenter	= 0;
-	ticks		= 0;
-
 	p_proc_ready	= proc_table;
     
 }
@@ -72,7 +101,12 @@ void schedule()
 	PROCESS*	p;
 	t_32		greatest_ticks = 0;
 
-	while (!greatest_ticks) {
+	p_proc_ready->ticks--;
+    if (p_proc_ready->ticks > 0) {
+	    return;
+	}
+    
+	while (greatest_ticks == 0) {
 		for (p=proc_table; p<proc_table+NR_TASKS; p++) {
 			if (p->ticks > greatest_ticks) {
 				greatest_ticks = p->ticks;
@@ -80,37 +114,10 @@ void schedule()
 			}
 		}
 
-		if (!greatest_ticks) {
+		if (greatest_ticks == 0) {
 			for (p=proc_table; p<proc_table+NR_TASKS; p++) {
 				p->ticks = p->priority;
 			}
 		}
-	}
-}
-
-//进程A
-void TestA()
-{
-	while(1){
-        //disp_int(disp_pos);
-		milli_delay(3000);
-	}
-}
-
-//进程B
-void TestB()
-{
-	int i = 0;
-	while(1){
-		milli_delay(10);
-	}
-}
-
-//进程C
-void TestC()
-{
-	int i = 0;
-	while(1){
-		milli_delay(10);
 	}
 }

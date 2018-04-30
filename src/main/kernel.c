@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 1:10:04 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Thursday, 26th April 2018 11:46:40 pm
+ * Last Modified: Monday, 30th April 2018 6:03:30 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 内核主体文件
@@ -13,14 +13,14 @@
 
 #include "kernel.h"
 
-//定义内核中的GDT
-ut_8		gdt_ptr[6];	    // 0~15:Limit  16~47:Base
-DESCRIPTOR	gdt[GDT_SIZE];
-
 //定义tss
-TSS		    tss;
+TSS		            tss;
 
-static void init_descriptor(DESCRIPTOR * p_desc, t_32 base, t_32 limit, t_16 attribute)
+//定义内核中的GDT
+ut_8		    gdt_ptr[6] = {0};	    // 0~15:Limit  16~47:Base
+DESCRIPTOR	    gdt[GDT_SIZE] = {0};
+
+static void init_descriptor(DESCRIPTOR * p_desc, ut_32 base, ut_32 limit, ut_16 attribute)
 {
 	p_desc->limit_low		 = limit & 0x0FFFF;		        // 段界限 1		(2 字节)
 	p_desc->base_low		 = base & 0x0FFFF;		        // 段基址 1		(2 字节)
@@ -32,7 +32,7 @@ static void init_descriptor(DESCRIPTOR * p_desc, t_32 base, t_32 limit, t_16 att
 }
 
 //由段获取段基址
-t_32 get_segaddr(t_16 seg)
+static ut_32 get_segaddr(ut_16 seg)
 {
 	DESCRIPTOR* p_dest = &gdt[seg >> 3];
 
@@ -73,7 +73,7 @@ static void init_gdt()
     load_tss();
     
 	/* 填充 GDT 中每个进程的 LDT 的描述符 */
-	int i;
+	t_32 i;
 	PROCESS* p_proc	= proc_table;
 	t_16 index_ldt  = INDEX_LDT_FIRST;
 	for(i=0;i<NR_TASKS;i++){

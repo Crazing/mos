@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:49:28 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 10:35:09 am
+ * Last Modified: Sunday, 29th April 2018 10:23:22 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 键盘输入处理程序
@@ -18,12 +18,12 @@
 #include "common.h"
 
 //键盘中断处理函数
-void keyboard_handler(int irq);
+void keyboard_handler(t_32 irq);
 
 //初始化键盘中断
 void init_keyboard();
 
 //从键盘输入缓冲区读取字符，转换成系统可以识别的表示符
-t_bool keyboard_read(t_32* code);
+t_bool keyboard_read(ut_32* code);
 
 #endif /* _MOS_KEYBOARD_H_ */

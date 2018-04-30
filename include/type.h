@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 1:41:26 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Wednesday, 25th April 2018 8:17:00 pm
+ * Last Modified: Sunday, 29th April 2018 9:11:53 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 全局基本类型
@@ -90,7 +90,7 @@ typedef struct s_tss {
 	ut_32	ldt;
 	ut_16	trap;
 	ut_16	iobase;	/* I/O位图基址大于或等于TSS段界限，就表示没有I/O许可位图 */
-	/*t_8	iomap[2];*/
+	/*ut_8	iomap[2];*/
 }TSS;
 
 //PCE头部，而且是SP0的调用栈
@@ -156,10 +156,10 @@ typedef struct s_tty
 
 /* Keyboard structure, 1 per console. */
 typedef struct s_kb {
-	t_8*	    p_head;			        /* 指向缓冲区中下一个空闲位置 */
-	t_8*	    p_tail;			        /* 指向键盘任务应处理的字节 */
-	t_32	    count;			        /* 缓冲区中共有多少字节 */
-	t_8	        buf[KB_IN_BYTES];       /* 缓冲区 */
+	ut_8*	    p_head;			        /* 指向缓冲区中下一个空闲位置 */
+	ut_8*	    p_tail;			        /* 指向键盘任务应处理的字节 */
+	ut_32	    count;			        /* 缓冲区中共有多少字节 */
+	ut_8	    buf[KB_IN_BYTES];       /* 缓冲区 */
 }KB_INPUT;
 
 #endif /* _MOS_TYPE_H_ */

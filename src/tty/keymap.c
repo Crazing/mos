@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 2:13:15 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Wednesday, 25th April 2018 9:36:52 pm
+ * Last Modified: Sunday, 29th April 2018 9:44:42 pm
  * Modified By: zhixiang
  * -----
  * FileContent: ”≥…‰…®√Ë¬Î
@@ -14,7 +14,7 @@
 #include "keymap.h"
 
 // Keymap for US MF-2 keyboard
-t_32 keymap[NR_SCAN_CODES * MAP_COLS] = {
+ut_32 keymap[NR_SCAN_CODES * MAP_COLS] = {
 
 /* scan-code			!Shift		Shift		E0 XX		*/
 /* ==================================================================== */

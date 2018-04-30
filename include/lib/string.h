@@ -4,7 +4,7 @@
  * File Created: Wednesday, 25th April 2018 8:37:50 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Wednesday, 25th April 2018 8:43:13 pm
+ * Last Modified: Monday, 30th April 2018 6:02:30 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 字符串操作函数
@@ -20,9 +20,9 @@
 void* memcpy(void* p_dst, void* p_src, t_32 size);
 
 //将指定数量的字符复制到dst
-void  memset(void* p_dst, char ch, int size);
+void  memset(void* p_dst, t_8 ch, t_32 size);
 
 //字符串复制
-char* strcpy(char* p_dst, char* p_src);
+t_8*  strcpy(t_8* p_dst, t_8* p_src);
 
 #endif /* _MOS_STRING_H_ */

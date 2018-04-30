@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 11:11:52 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Tuesday, 24th April 2018 10:57:26 pm
+ * Last Modified: Sunday, 29th April 2018 10:14:59 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 中断处理程序主体
@@ -26,7 +26,7 @@ void    init_interrupt();
 void    open_interrupt();
 
 //异常处理
-void    exception_handler(t_32 vec_no, t_32 err_code, t_32 eip, t_32 cs, t_32 eflags);
+void    exception_handler(t_32 vec_no, ut_32 err_code, ut_32 eip, ut_32 cs, ut_32 eflags);
 
 //内核跳入任务的方法
 void	restart();

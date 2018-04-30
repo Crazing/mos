@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 11:48:42 am
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 10:37:31 am
+ * Last Modified: Monday, 30th April 2018 5:50:02 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 终端任务程序主体
@@ -13,10 +13,26 @@
 
 #include "tty.h"
 
-TTY     tty_table[NR_TTY];
+//终端表
+static TTY         tty_table[NR_TTY] = {0};
+
+//当前终端
+static TTY*		   p_current_tty = NULL;
+
+//选择当前终端
+static void select_tty(t_32 index)
+{
+    if ((index < 0) || (index >= NR_TTY)) {	/* invalid tty number */
+		return;
+	}
+    TTY* p_tty = &tty_table[index];
+    p_current_tty = p_tty;
+    select_console(p_tty->p_console);
+}
+
 
 //处理从输入缓冲区处理返回的标识符
-static void handle_key(TTY* p_tty, t_32 key)
+static void handle_key(TTY* p_tty, ut_32 key)
 {
 	if (!(key & FLAG_EXT)) {
 		if (p_tty->inbuf_count < TTY_IN_BYTES) {
@@ -29,7 +45,7 @@ static void handle_key(TTY* p_tty, t_32 key)
 		}
 	}
 	else {
-		int raw_code = key & MASK_RAW;
+		ut_32 raw_code = key & MASK_RAW;
 		switch(raw_code) {
 		case UP:
 			if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R)) {	/* Shift + Up */
@@ -53,8 +69,8 @@ static void handle_key(TTY* p_tty, t_32 key)
 		case F10:
 		case F11:
 		case F12:
-			if ((key & FLAG_ALT_L) || (key & FLAG_ALT_R)) {	/* Alt + F1~F12 */
-				select_console(raw_code - F1);
+			if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R)) {	/* Shift + F1~F12 */
+				select_tty(raw_code - F1);
 			}
 			break;
 		default:
@@ -64,23 +80,22 @@ static void handle_key(TTY* p_tty, t_32 key)
 }
 
 //尝试读取字符
-static void tty_do_read(TTY* p_tty)
+static void tty_do_read()
 {
-    t_32     key  = 0;
-    t_bool   flag = FALSE;
-	if (is_current_console(p_tty->p_console)) {
-		flag = keyboard_read(&key);
-        if (flag)
-            handle_key(p_tty, key);
-	}
+    ut_32     key  = 0;
+    t_bool    flag = FALSE;
+	flag = keyboard_read(&key);
+    if (flag)
+        handle_key(p_current_tty, key);
 }
 
 
 //尝试写入字符串
-static void tty_do_write(TTY* p_tty)
+static void tty_do_write()
 {
+    TTY* p_tty = p_current_tty;
 	if (p_tty->inbuf_count) {
-		char ch = *(p_tty->p_inbuf_tail);
+		ut_8 ch = *(p_tty->p_inbuf_tail);
 		p_tty->p_inbuf_tail++;
 		if (p_tty->p_inbuf_tail == p_tty->in_buf + TTY_IN_BYTES) {
 			p_tty->p_inbuf_tail = p_tty->in_buf;
@@ -97,24 +112,22 @@ static void init_tty(TTY* p_tty)
 	p_tty->inbuf_count = 0;
 	p_tty->p_inbuf_head = p_tty->p_inbuf_tail = p_tty->in_buf;
 
-	init_screen(p_tty);
+    apply_console(&p_tty->p_console);
 }
 
 //终端进程
 void task_tty()
 {
 	TTY*	p_tty;
-
+    t_32    nr_current_tty;
 	for (p_tty=tty_table;p_tty<tty_table+NR_TTY;p_tty++) {
 		init_tty(p_tty);
 	}
 
-	select_console(0);
+	select_tty(0);
 
 	while (1) {
-		for (p_tty=tty_table;p_tty<tty_table+NR_TTY;p_tty++) {
-			tty_do_read(p_tty);
-			tty_do_write(p_tty);
-		}
+		tty_do_read();
+		tty_do_write();
 	}
 }

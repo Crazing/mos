@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 11:15:51 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 10:42:29 am
+ * Last Modified: Monday, 30th April 2018 5:44:07 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 8259A主体程序
@@ -14,10 +14,10 @@
 #include "8259A.h"
 
 //8259A中断处理表
-t_pf_irq_handler	irq_table[NR_IRQ];
+t_pf_irq_handler	irq_table[NR_IRQ] = {NULL};
 
 //8259A默认的中断处理程序
-void spurious_irq(int irq)
+void spurious_irq(t_32 irq)
 {
 	disp_str("spurious_irq: ");
 	disp_int(irq);
@@ -25,7 +25,7 @@ void spurious_irq(int irq)
 }
 
 //设置irq的处理函数
-void put_irq_handler(int irq, t_pf_irq_handler handler)
+void put_irq_handler(t_32 irq, t_pf_irq_handler handler)
 {
 	disable_irq(irq);
 	irq_table[irq] = handler;
@@ -46,7 +46,7 @@ void init_8259A()
 	out_byte(INT_M_CTLMASK,	0xFF);	            // Master 8259, OCW1. 
 	out_byte(INT_S_CTLMASK,	0xFF);	            // Slave  8259, OCW1. 
 
-	int i;
+	t_32 i;
 	for(i=0;i<NR_IRQ;i++){
 		irq_table[i] = spurious_irq;
 	} 

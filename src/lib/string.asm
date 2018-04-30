@@ -20,7 +20,7 @@ global	strcpy
 
 
 ; ------------------------------------------------------------------------
-; void* memcpy(void* es:p_dst, void* ds:p_src, int size);
+; void* memcpy(void* es:p_dst, void* ds:p_src, t_32 size);
 ; ------------------------------------------------------------------------
 memcpy:
 	push	ebp
@@ -59,7 +59,7 @@ memcpy:
 
 
 ; ------------------------------------------------------------------------
-; void memset(void* p_dst, char ch, int size);
+; void memset(void* p_dst, t_8 ch, t_32 size);
 ; ------------------------------------------------------------------------
 memset:
 	push	ebp
@@ -94,12 +94,14 @@ memset:
 
 
 ; ------------------------------------------------------------------------
-; char* strcpy(char* p_dst, char* p_src);
+; t_8* strcpy(t_8* p_dst, t_8* p_src);
 ; ------------------------------------------------------------------------
 strcpy:
 	push	ebp
 	mov	ebp, esp
 
+    push esi
+    push edi
 	mov	esi, [ebp + 12]	; Source
 	mov	edi, [ebp + 8]	; Destination
 
@@ -115,6 +117,8 @@ strcpy:
 
 	mov	eax, [ebp + 8]	; 返回值
 
+    pop edi
+    pop esi
 	pop	ebp
 	ret			; 函数结束，返回
 ; strcpy 结束-------------------------------------------------------------

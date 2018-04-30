@@ -16,11 +16,9 @@
 bits 32
 
 global k_reenter
-global ticks
 
 [SECTION .data]
 k_reenter		dd  0
-ticks           dd  0
 
 [section .text]	; ´úÂëÔÚ´Ë
 

@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 11:09:04 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Friday, 27th April 2018 9:41:12 pm
+ * Last Modified: Monday, 30th April 2018 6:10:10 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 中断处理程序主体
@@ -14,63 +14,13 @@
 #include "interrupt.h"
 
 //定义内核中的IDT
-ut_8		idt_ptr[6];	    // 0~15:Limit  16~47:Base
-GATE	    idt[IDT_SIZE];
-
-//异常处理
-void exception_handler(t_32 vec_no, t_32 err_code, t_32 eip, t_32 cs, t_32 eflags)
-{
-	t_32 i;
-	t_32 text_color = 0x74; /* 灰底红字 */
-	t_8  err_description[][64] = {	"#DE Divide Error",
-					                "#DB RESERVED",
-					                "—  NMI Interrupt",
-					                "#BP Breakpoint",
-					                "#OF Overflow",
-					                "#BR BOUND Range Exceeded",
-					                "#UD Invalid Opcode (Undefined Opcode)",
-					                "#NM Device Not Available (No Math Coprocessor)",
-					                "#DF Double Fault",
-					                "    Coprocessor Segment Overrun (reserved)",
-					                "#TS Invalid TSS",
-					                "#NP Segment Not Present",
-					                "#SS Stack-Segment Fault",
-					                "#GP General Protection",
-					                "#PF Page Fault",
-					                "—  (Intel reserved. Do not use.)",
-					                "#MF x87 FPU Floating-Point Error (Math Fault)",
-					                "#AC Alignment Check",
-					                "#MC Machine Check",
-					                "#XF SIMD Floating-Point Exception"
-				                };
-
-	/* 通过打印空格的方式清空屏幕的前五行，并把 disp_pos 清零 */
-	disp_pos = 0;
-	for(i=0;i<80*5;i++){
-		disp_str(" ");
-	}
-	disp_pos = 0;
-
-	disp_color_str("Exception! --> ", text_color);
-	disp_color_str(err_description[vec_no], text_color);
-	disp_color_str("\n\n", text_color);
-	disp_color_str("EFLAGS:", text_color);
-	disp_int(eflags);
-	disp_color_str("CS:", text_color);
-	disp_int(cs);
-	disp_color_str("EIP:", text_color);
-	disp_int(eip);
-
-	if(err_code != 0xFFFFFFFF){
-		disp_color_str("Error code:", text_color);
-		disp_int(err_code);
-	}
-}
+ut_8		idt_ptr[6] = {0};	    // 0~15:Limit  16~47:Base
+GATE	    idt[IDT_SIZE] = {0};
 
 //初始化 386 中断门
 static void init_idt_desc(GATE* p_gate, ut_8 desc_type, t_pf_int_handler handler, ut_8 privilege)
 {
-	t_32	base	    = (t_32)handler;
+	ut_32	base	    = (ut_32)handler;
 	p_gate->offset_low	= base & 0xFFFF;
 	p_gate->selector	= SELECTOR_KERNEL_CS;
 	p_gate->dcount		= 0;
@@ -117,10 +67,60 @@ static void init_idt()
 	init_idt_desc(&idt[INT_VECTOR_SYS_CALL],	    DA_386IGate, sys_call,			    PRIVILEGE_USER);
 
     // idt_ptr[6] 共 6 个字节：0~15:Limit  16~47:Base。用作 sidt 以及 lidt 的参数。
-	t_16* p_idt_limit = (t_16*)(&idt_ptr[0]);
-	t_32* p_idt_base  = (t_32*)(&idt_ptr[2]);
+	t_16* p_idt_limit = (ut_16*)(&idt_ptr[0]);
+	t_32* p_idt_base  = (ut_32*)(&idt_ptr[2]);
 	*p_idt_limit = IDT_SIZE * sizeof(GATE) - 1;
-	*p_idt_base  = (t_32)&idt;
+	*p_idt_base  = (ut_32)&idt;
+}
+
+//异常处理
+void exception_handler(t_32 vec_no, ut_32 err_code, ut_32 eip, ut_32 cs, ut_32 eflags)
+{
+	ut_32 i;
+	t_32 text_color = 0x74; /* 灰底红字 */
+	t_8  err_description[][64] = {	"#DE Divide Error",
+					                "#DB RESERVED",
+					                "—  NMI Interrupt",
+					                "#BP Breakpoint",
+					                "#OF Overflow",
+					                "#BR BOUND Range Exceeded",
+					                "#UD Invalid Opcode (Undefined Opcode)",
+					                "#NM Device Not Available (No Math Coprocessor)",
+					                "#DF Double Fault",
+					                "    Coprocessor Segment Overrun (reserved)",
+					                "#TS Invalid TSS",
+					                "#NP Segment Not Present",
+					                "#SS Stack-Segment Fault",
+					                "#GP General Protection",
+					                "#PF Page Fault",
+					                "—  (Intel reserved. Do not use.)",
+					                "#MF x87 FPU Floating-Point Error (Math Fault)",
+					                "#AC Alignment Check",
+					                "#MC Machine Check",
+					                "#XF SIMD Floating-Point Exception"
+				                };
+
+	/* 通过打印空格的方式清空屏幕的前五行，并把 disp_pos 清零 */
+	disp_pos = 0;
+	for(i=0;i<80*5;i++){
+		disp_str(" ");
+	}
+	disp_pos = 0;
+
+	disp_color_str("Exception! --> ", text_color);
+	disp_color_str(err_description[vec_no], text_color);
+	disp_color_str("\n\n", text_color);
+	disp_color_str("EFLAGS:", text_color);
+	disp_int(eflags);
+	disp_color_str("CS:", text_color);
+	disp_int(cs);
+	disp_color_str("EIP:", text_color);
+	disp_int(eip);
+
+	if(err_code != 0xFFFFFFFF){
+		disp_color_str("Error code:", text_color);
+		disp_int(err_code);
+	}
 }
 
 //初始化中断处理
