@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:49:28 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Sunday, 29th April 2018 10:23:22 pm
+ * Last Modified: Tuesday, 1st May 2018 7:17:16 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 键盘输入处理程序
@@ -16,6 +16,7 @@
 
 #include "global.h"
 #include "common.h"
+#include "string.h"
 
 //键盘中断处理函数
 void keyboard_handler(t_32 irq);

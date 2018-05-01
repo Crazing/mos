@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:27:40 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 6:11:43 pm
+ * Last Modified: Monday, 30th April 2018 10:42:18 pm
  * Modified By: zhixiang
  * -----
  * FileContent: ¿ØÖÆÌ¨º¯Êý
@@ -74,10 +74,35 @@ void out_char(CONSOLE* p_con, ut_8 ch)
 {
 	ut_8* p_vmem = (ut_8*)(V_MEM_BASE + p_con->cursor * 2);
 
-	*p_vmem++ = ch;
-	*p_vmem++ = DEFAULT_CHAR_COLOR;
-	p_con->cursor++;
+	switch(ch) {
+	case '\n':
+		if (p_con->cursor < p_con->original_addr + p_con->v_mem_limit - SCREEN_WIDTH) {
+			p_con->cursor = p_con->original_addr + SCREEN_WIDTH * ((p_con->cursor - p_con->original_addr) / SCREEN_WIDTH + 1);
+		}
+		break;
+	case '\b':
+		if (p_con->cursor > p_con->original_addr) {
+			p_con->cursor--;
+			*(p_vmem-2) = ' ';
+			*(p_vmem-1) = DEFAULT_CHAR_COLOR;
+		}
+		break;
+	default:
+		if (p_con->cursor < p_con->original_addr + p_con->v_mem_limit - 1) {
+			*p_vmem++ = ch;
+			*p_vmem++ = DEFAULT_CHAR_COLOR;
+			p_con->cursor++;
+		}
+		break;
+	}
 
+	while (p_con->cursor >= p_con->current_start_addr + SCREEN_SIZE) {
+		scroll_screen(p_con, SCROLL_SCREEN_DOWN);
+	}
+    while (p_con->cursor < p_con->current_start_addr) {
+		scroll_screen(p_con, SCROLL_SCREEN_UP);
+	}
+    
 	set_cursor(p_con->cursor);
 }
 

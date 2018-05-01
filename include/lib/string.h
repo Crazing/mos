@@ -4,7 +4,7 @@
  * File Created: Wednesday, 25th April 2018 8:37:50 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 6:02:30 pm
+ * Last Modified: Tuesday, 1st May 2018 6:44:26 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 字符串操作函数
@@ -24,5 +24,14 @@ void  memset(void* p_dst, t_8 ch, t_32 size);
 
 //字符串复制
 t_8*  strcpy(t_8* p_dst, t_8* p_src);
+
+//获取字符串长度
+t_32  strlen(const t_8* p_src);
+
+//子串查找
+t_8*  strstr(const t_8* string, const t_8* search);
+
+//查找字符串中第一次出现ch的位置
+t_8*  strchr(const t_8* str, t_8 ch);
 
 #endif /* _MOS_STRING_H_ */

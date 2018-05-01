@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 11:48:42 am
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 5:50:02 pm
+ * Last Modified: Monday, 30th April 2018 10:23:18 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 终端任务程序主体
@@ -30,23 +30,33 @@ static void select_tty(t_32 index)
     select_console(p_tty->p_console);
 }
 
+static void put_key(TTY* p_tty, t_32 key)
+{
+	if (p_tty->inbuf_count < TTY_IN_BYTES) {
+		*(p_tty->p_inbuf_head) = key;
+		p_tty->p_inbuf_head++;
+		if (p_tty->p_inbuf_head == p_tty->in_buf + TTY_IN_BYTES) {
+			p_tty->p_inbuf_head = p_tty->in_buf;
+		}
+		p_tty->inbuf_count++;
+	}
+}
 
 //处理从输入缓冲区处理返回的标识符
 static void handle_key(TTY* p_tty, ut_32 key)
 {
 	if (!(key & FLAG_EXT)) {
-		if (p_tty->inbuf_count < TTY_IN_BYTES) {
-			*(p_tty->p_inbuf_head) = key;
-			p_tty->p_inbuf_head++;
-			if (p_tty->p_inbuf_head == p_tty->in_buf + TTY_IN_BYTES) {
-				p_tty->p_inbuf_head = p_tty->in_buf;
-			}
-			p_tty->inbuf_count++;
-		}
+		put_key(p_tty, key);
 	}
 	else {
 		ut_32 raw_code = key & MASK_RAW;
 		switch(raw_code) {
+        case ENTER:
+			put_key(p_tty, '\n');
+			break;
+		case BACKSPACE:
+			put_key(p_tty, '\b');
+			break;
 		case UP:
 			if ((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R)) {	/* Shift + Up */
 				scroll_screen(p_tty->p_console, SCROLL_SCREEN_UP);
