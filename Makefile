@@ -25,9 +25,9 @@ MOSKERNEL	= kernel.bin
 MSOURCES	= src/main/kernel.asm src/interrupt/interrupt.asm src/interrupt/sys_call.asm\
 			  src/lib/common.asm src/lib/string.asm 
 CSOURCES	= src/interrupt/8259A.c src/interrupt/clock.c src/interrupt/interrupt.c\
-			  src/interrupt/sys_call.c src/lib/common.c src/lib/string.c src/main/kernel.c\
-			  src/process/process.c src/tty/console.c src/tty/keyboard.c src/tty/keymap.c\
-			  src/tty/tty.c
+			  src/interrupt/sys_call.c src/lib/common.c src/lib/stdio.c src/lib/string.c\
+			  src/main/kernel.c src/process/process.c src/tty/console.c src/tty/keyboard.c\
+			  src/tty/keymap.c src/tty/tty.c
 
 MOBJS		= $(MSOURCES:.asm=_s.o)
 COBJS		= $(CSOURCES:.c=.o)

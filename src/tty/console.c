@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:27:40 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 10:42:18 pm
+ * Last Modified: Wednesday, 2nd May 2018 11:47:21 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 控制台函数
@@ -69,6 +69,18 @@ static init_console(CONSOLE* p_con)
 	set_cursor(p_con->cursor);
 }
 
+//刷新屏幕位置
+void flush_screen(CONSOLE* p_con)
+{
+    while (p_con->cursor >= p_con->current_start_addr + SCREEN_SIZE) {
+		scroll_screen(p_con, SCROLL_SCREEN_DOWN);
+	}
+    while (p_con->cursor < p_con->current_start_addr) {
+		scroll_screen(p_con, SCROLL_SCREEN_UP);
+	}
+    set_cursor(p_con->cursor);
+}
+
 //向控制台输出字符
 void out_char(CONSOLE* p_con, ut_8 ch)
 {
@@ -94,13 +106,6 @@ void out_char(CONSOLE* p_con, ut_8 ch)
 			p_con->cursor++;
 		}
 		break;
-	}
-
-	while (p_con->cursor >= p_con->current_start_addr + SCREEN_SIZE) {
-		scroll_screen(p_con, SCROLL_SCREEN_DOWN);
-	}
-    while (p_con->cursor < p_con->current_start_addr) {
-		scroll_screen(p_con, SCROLL_SCREEN_UP);
 	}
     
 	set_cursor(p_con->cursor);

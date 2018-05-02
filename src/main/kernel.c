@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 1:10:04 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 6:03:30 pm
+ * Last Modified: Wednesday, 2nd May 2018 2:57:35 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 内核主体文件
@@ -76,7 +76,7 @@ static void init_gdt()
 	t_32 i;
 	PROCESS* p_proc	= proc_table;
 	t_16 index_ldt  = INDEX_LDT_FIRST;
-	for(i=0;i<NR_TASKS;i++){
+	for(i=0;i<NR_TASKS + NR_PROCS;i++){
 		init_descriptor(&gdt[index_ldt],
 				GETVIRADDR(get_segaddr(SELECTOR_KERNEL_DS), proc_table[i].ldts),
 				LDT_SIZE * sizeof(DESCRIPTOR) - 1,

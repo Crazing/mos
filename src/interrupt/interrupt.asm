@@ -248,12 +248,16 @@ save:
 ;系统调用中断接口
 sys_call:
 	call	save
-
+    
 	sti
 
+    push	ecx
+	push	ebx
+    push	dword [p_proc_ready]
 	call	[sys_call_table + eax * 4]
+    add	    esp, 4 * 3
 	mov	    [esi + EAXREG - P_STACKBASE], eax
-
+    
 	cli
 
 	ret

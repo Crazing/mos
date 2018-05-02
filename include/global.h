@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 8:55:29 am
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 5:41:27 pm
+ * Last Modified: Wednesday, 2nd May 2018 10:03:26 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 全局公共变量
@@ -46,5 +46,9 @@ extern PROCESS	        proc_table[];
 
 //keymap.c
 extern ut_32            keymap[];
+
+//tty.c
+//终端表
+extern TTY              tty_table[];
 
 #endif /* _MOS_INTERRUPT_H_ */

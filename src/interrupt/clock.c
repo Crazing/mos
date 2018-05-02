@@ -4,7 +4,7 @@
  * File Created: Tuesday, 24th April 2018 11:32:48 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 6:09:36 pm
+ * Last Modified: Wednesday, 2nd May 2018 11:23:52 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 时钟中断程序主体
@@ -21,7 +21,7 @@ static void clock_handler(t_32 irq)
 {
 	//disp_str("#");
 	ticks++;
-    if(ticks > 10000)
+    if(ticks >= (((ut_32)1<<31)-1))
         ticks = 0;
 
 	if (k_reenter != 0) {

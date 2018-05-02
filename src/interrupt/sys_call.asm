@@ -15,6 +15,7 @@
 
 ; µ¼³ö·ûºÅ
 global	get_ticks
+global  write
 
 
 bits 32
@@ -23,5 +24,13 @@ bits 32
 ;t_32   get_ticks();
 get_ticks:
 	mov	eax, _NR_get_ticks
+	int	INT_VECTOR_SYS_CALL
+	ret
+
+; void write(t_8* buf, t_32 len);
+write:
+	mov	eax, _NR_write
+	mov	ebx, [esp + 4]
+	mov	ecx, [esp + 8]
 	int	INT_VECTOR_SYS_CALL
 	ret

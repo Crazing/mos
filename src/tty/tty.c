@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 11:48:42 am
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 10:23:18 pm
+ * Last Modified: Wednesday, 2nd May 2018 11:46:57 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 终端任务程序主体
@@ -14,7 +14,7 @@
 #include "tty.h"
 
 //终端表
-static TTY         tty_table[NR_TTY] = {0};
+TTY                tty_table[NR_TTY] = {0};
 
 //当前终端
 static TTY*		   p_current_tty = NULL;
@@ -114,6 +114,7 @@ static void tty_do_write()
 
 		out_char(p_tty->p_console, ch);
 	}
+    flush_screen(p_tty->p_console);
 }
 
 //初始化tty

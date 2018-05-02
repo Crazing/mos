@@ -4,7 +4,7 @@
  * File Created: Monday, 23rd April 2018 12:26:16 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Monday, 30th April 2018 1:06:08 am
+ * Last Modified: Wednesday, 2nd May 2018 11:40:41 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 控制台函数
@@ -22,6 +22,9 @@ t_bool apply_console(CONSOLE** p_pcon);
 
 //选择控制台
 void select_console(const CONSOLE* p_con);
+
+//刷新屏幕位置
+void flush_screen(CONSOLE* p_con);
 
 //向控制台输出字符
 void out_char(CONSOLE* p_con, ut_8 ch);

@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 1:41:26 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Sunday, 29th April 2018 9:11:53 pm
+ * Last Modified: Wednesday, 2nd May 2018 10:11:59 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 全局基本类型
@@ -27,6 +27,9 @@ typedef	         int	    t_bool;
 
 //端口号类型
 typedef	unsigned int		t_port;
+
+//可变参数中使用
+typedef char*			    va_list;
 
 //门描述符中的处理函数
 typedef	void	(*t_pf_int_handler)	();
@@ -125,6 +128,7 @@ typedef struct s_proc {
 	t_32				priority;
 	ut_32				pid;			    /* process id passed in from MM */
 	t_8				    name[16];		    /* name of the process */
+    t_32				nr_tty;
 }PROCESS;
 
 //任务结构体

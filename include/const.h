@@ -4,7 +4,7 @@
  * File Created: Sunday, 22nd April 2018 11:45:55 pm
  * Author: zhixiang (1115267126@qq.com)
  * -----
- * Last Modified: Tuesday, 1st May 2018 7:28:38 pm
+ * Last Modified: Wednesday, 2nd May 2018 10:07:12 pm
  * Modified By: zhixiang
  * -----
  * FileContent: 全局常量定义
@@ -151,7 +151,7 @@
 #define	INT_VECTOR_SYS_CALL		    0x90
 
 /* system call */
-#define	NR_SYS_CALL	1
+#define	NR_SYS_CALL	2
 
 // GDT 和 IDT 中描述符的个数 
 #define GDT_SIZE	        128
@@ -163,8 +163,9 @@
 /* 每个任务有一个单独的 LDT, 每个 LDT 中的描述符个数: */
 #define LDT_SIZE		2
 
-/* Number of tasks */
-#define NR_TASKS		4
+/* Number of tasks & processes */
+#define NR_TASKS		1
+#define NR_PROCS		3
 
 /* stacks of tasks */
 #define STACK_SIZE_TTY		0x8000
